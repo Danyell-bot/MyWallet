@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sc_expense_short">Add expense</string>
+    <string name="sc_expense_long">Add a new expense</string>
+    <string name="sc_income_short">Add income</string>
+    <string name="sc_income_long">Add new income</string>
+    <string name="widget_desc">Total balance and safe-to-spend</string>
+</resources>

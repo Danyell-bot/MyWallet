@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MyWallet.Splash">
+        <item name="android:windowBackground">@drawable/ipon_splash</item>
+        <item name="android:windowSplashScreenBackground">@color/ipon_icon_bg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ipon_icon_fg</item>
+    </style>
+</resources>

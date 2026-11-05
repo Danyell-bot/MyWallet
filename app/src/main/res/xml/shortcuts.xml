@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_expense"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_expense_short"
+        android:shortcutLongLabel="@string/sc_expense_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.mywallet"
+            android:targetClass="com.example.mywallet.MainActivity">
+            <extra android:name="add" android:value="expense" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="add_income"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_income_short"
+        android:shortcutLongLabel="@string/sc_income_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.example.mywallet"
+            android:targetClass="com.example.mywallet.MainActivity">
+            <extra android:name="add" android:value="income" />
+        </intent>
+    </shortcut>
+</shortcuts>

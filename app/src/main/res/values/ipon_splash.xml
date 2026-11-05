@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Inherits Theme.MyWallet automatically (the part before the last dot). -->
+    <style name="Theme.MyWallet.Splash">
+        <item name="android:windowBackground">@drawable/ipon_splash</item>
+    </style>
+</resources>
