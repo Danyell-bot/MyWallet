@@ -524,7 +524,6 @@ button,.row,.chip,.cat,.btn{touch-action:manipulation;-webkit-tap-highlight-colo
 .dcell.sel{background:var(--accent);color:var(--accent-ink)}.dcell.sel small{color:inherit;opacity:.85}.dcell.sel u{background:var(--accent-ink)}
 .setrow .rmain small{white-space:normal;overflow:visible;text-overflow:clip}
 
-.calcline{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .kptog{flex:none;padding:6px 12px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
 /* calendar: full-width cells so day letters line up, bigger text */
 .dcell{width:100%;justify-self:stretch;font-size:15px;aspect-ratio:1/1.2;background:var(--surface2)}
@@ -549,6 +548,43 @@ button,.row,.chip,.cat,.btn{touch-action:manipulation;-webkit-tap-highlight-colo
 .acard.lt::before,.acard.lt::after{background:rgba(255,255,255,.28)}
 .flms{flex-wrap:nowrap;max-width:none}.flms .f5{font-size:22px}.flms .flame{margin-right:-2px}
 
+/* amount field with the calculator button inside it */
+.amtwrap{position:relative;display:block}
+.amtwrap .in-t{padding-left:56px;padding-right:56px}
+.kptog{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:13px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;padding:0;font-size:0}
+.kptog svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.kptog:active{transform:translateY(-50%) scale(.94)}
+.calcline{display:block;text-align:right;min-height:18px}
+/* streak flame */
+.fl{display:inline-grid;place-items:center;line-height:0;filter:drop-shadow(0 0 5px var(--fg,rgba(255,120,30,.55)))}
+.fl.t0{filter:none;opacity:.9}.fl.t1{--fg:rgba(255,110,30,.5)}.fl.t2{--fg:rgba(240,40,28,.55)}.fl.t3{--fg:rgba(255,170,0,.6)}.fl.t4{--fg:rgba(40,130,255,.6)}.fl.t5{--fg:rgba(130,60,230,.6)}.fl.t6{--fg:rgba(220,30,150,.6)}.fl.t7{--fg:rgba(255,200,60,.7)}
+.streak .fl{margin-right:1px}
+.streak .fl .flsvg{display:block}
+@media (prefers-reduced-motion:no-preference){.fl:not(.t0){animation:flick 1.8s ease-in-out infinite;transform-origin:50% 90%}}
+.flhead{display:flex;align-items:center;gap:14px}.flhead .stxt{min-width:0}
+.warnt{color:var(--warn)}
+.flladder{display:flex;justify-content:space-between;gap:4px}
+.flladder .lad{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.38;filter:grayscale(1)}
+.flladder .lad.on{opacity:1;filter:none}
+.flladder small{font-size:10px;color:var(--mute);font-weight:700}
+/* receipt viewer */
+.rcpt img{cursor:zoom-in}
+#imgv{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.94);display:flex;flex-direction:column;align-items:center;justify-content:center}
+#imgv .iconbtn{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;background:rgba(255,255,255,.16);color:#fff}
+#imgv .iconbtn svg{stroke:#fff}
+.imgvbox{width:100%;height:100%;overflow:auto;display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch}
+.imgvbox img{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:none}
+.imgvbox.zoom{align-items:flex-start;justify-content:flex-start}
+.imgvbox.zoom img{max-width:none;max-height:none;width:220%}
+.imgvhint{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));color:rgba(255,255,255,.7);font-size:12px;pointer-events:none}
+html.locked #imgv{display:none}
+.calcline{min-height:0;margin-top:-6px}.calcout:empty{display:none}
+.flladder{align-items:flex-end}.flladder .lad{justify-content:flex-end}
+.verline{display:block;margin:4px auto 0;padding:6px 12px;font-size:12px;color:var(--mute);font-weight:600}
+.devtag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.devbox{width:100%;min-height:200px;font:12px/1.4 ui-monospace,Consolas,monospace;border-radius:14px;padding:10px;background:var(--surface);color:var(--ink);border:1px solid var(--line);resize:vertical}
+.hdebts{display:flex;flex-direction:column;gap:8px}.hdebts .sech{margin:0}
+
 </style>
 
 
@@ -563,7 +599,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-const todayStr=()=>ymd(new Date());
+const todayStr=()=>ymd(new Date(Date.now()+(window.__devOff||0)*864e5));
 const dn=s=>{const [y,m,d]=s.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)};
 const fromDn=n=>{const d=new Date(n*864e5);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())};
 const dparts=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
@@ -574,6 +610,7 @@ const sum=a=>a.reduce((x,y)=>x+y,0);
 
 const ICONS={
  rec:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+ calc:'<rect x="5" y="2.5" width="14" height="19" rx="3"/><rect x="8" y="5.5" width="8" height="3.6" rx=".9"/><path d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 16.5h.01M12 16.5h.01M15.5 16.5h.01" stroke-width="2.6"/>',
  wallet:'<path d="M3 7a2 2 0 0 1 2-2h12v3"/><path d="M3 7v11a2 2 0 0 0 2 2h15V8H5a2 2 0 0 1-2-1z"/><circle cx="16.5" cy="14" r="1"/>',
  bank:'<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',
  bud:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
@@ -776,7 +813,7 @@ function vAcc(){
   const tot=sum(bals),assets=sum(bals.filter(v=>v>0)),liab=-sum(bals.filter(v=>v<0));
   const lv=S.settings.aview==='list';
   const card=a=>{
-    const bal=balanceNow(a),kind=a.kind==='bank'?'Bank account':a.kind==='card'?'Card':'Cash / wallet';
+    const bal=balanceNow(a),kind=a.kind==='bank'?'Bank account':a.kind==='card'?'Card':a.kind==='ewallet'?'E-wallet':'Cash / wallet';
     return `<button class="acard${a.ignored?' ign':''}${brandCls(a)}" style="--g:${accGrad(a)}" data-a="accView" data-id="${a.id}" aria-label="${esc(a.name)}, ${esc(money(bal))}">
      <div class="ah"><span class="aic">${esc(a.icon)}</span>${a.kind==='bank'?accBadgeW(a):''}</div>
      <div class="mainc"><div class="an">${esc(a.name)}${a.ignored?' (ignored)':''}</div><div class="ak">${kind}</div></div>
@@ -1090,7 +1127,7 @@ const A={
    let txt=$('#restoreText').value.trim();const f=$('#restoreFile').files[0];
    if(!txt&&f){try{txt=await f.text()}catch(e){}}
    if(!txt)return toast('Choose a file or paste backup text');
-   let obj;try{obj=JSON.parse(txt)}catch(e){return toast('That is not a valid backup')}
+   let obj;try{obj=JSON.parse(txt)}catch(e){return toast(/\}\s*$/.test(txt)?'That is not a valid backup':'This backup is incomplete (cut off). Use the saved .json file instead.')}
    if(!obj||!Array.isArray(obj.accounts)||!Array.isArray(obj.recs)||!Array.isArray(obj.cats))return toast('That is not a MyWallet backup');
    ask('The current records, categories, budgets and accounts will be replaced. Are you sure?','Restore',()=>{S={...freshState(),...obj};N.bankId=null;save();applyTheme();render();toast('Restored')});
  },
@@ -1451,8 +1488,8 @@ function recSheet(){
   const cats=S.cats.filter(c=>c.type===d.type&&(!c.ignored||c.id===d.cat));
   const ca=acc(d.acct),sign=ca&&ca.cur?ca.cur:S.settings.cur;
   return wrap(SH.edit?'Edit record':'New record',`<div class="seg" style="flex-wrap:wrap">${types.map(([k,n])=>`<button aria-pressed="${d.type===k}" data-a="recType" data-k="${k}" style="min-width:${k==='check'?'100px':'70px'}">${n}</button>`).join('')}</div>
-  <label class="f">${d.type==='check'?'Balance shown by the bank at end of day':'Amount'} (${esc(sign)})<input class="in-t amount num" id="amt" inputmode="${KP.sys?'decimal':'none'}" placeholder="0" value="${esc(d.amount)}" data-d="amount" autocomplete="off" ></label>
-  <div class="calcline"><button type="button" class="kptog" data-a="kpMode">${KP.sys?'\uD83E\uDDEE Calculator':'\u2328 Keyboard'}</button><span class="calcout num" id="calcOut">${calcHint(d.amount)}</span></div>${cpadHtml()}
+  <label class="f">${d.type==='check'?'Balance shown by the bank at end of day':'Amount'} (${esc(sign)})<span class="amtwrap"><input class="in-t amount num" id="amt" inputmode="${KP.want?'none':'decimal'}" placeholder="0" value="${esc(d.amount)}" data-d="amount" autocomplete="off" ><button type="button" class="kptog" data-a="kpMode" aria-label="Calculator">${ic('calc')}</button></span></label>
+  <div class="calcline"><span class="calcout num" id="calcOut">${calcHint(d.amount)}</span></div>${cpadHtml()}
   <div class="formgrid"><label class="f ${d.type==='transfer'?'':'full'}">${d.type==='transfer'?'From':'Account'}${sel('acct',d.acct)}</label>${d.type==='transfer'?`<label class="f">To${sel('to',d.to)}</label>`:''}${(d.type==='transfer'&&acc(d.to)&&rate(d.acct)!==rate(d.to))?`<label class="f full">Amount received (${esc(acc(d.to).cur||S.settings.cur)})<input class="in-t num" inputmode="decimal" data-d="toAmount" value="${esc(d.toAmount||'')}" placeholder="${esc(String(Math.round((num(d.amount)||0)*rate(d.acct)/rate(d.to)*100)/100))}"></label>`:''}
   <label class="f">Date<input class="in-t" type="date" value="${esc(d.date)}" data-d="date"></label><label class="f">Note<input class="in-t" id="noteIn" value="${esc(d.note)}" placeholder="Add a note or #tag" data-d="note" maxlength="120"></label></div>
   ${(d.type==='expense'||d.type==='income')?`<div><div class="lbl" style="margin-bottom:6px">Category <span id="catHint" class="hint">${d.autoCat&&d.cat?'✨ Picked for you':''}</span></div><div class="catgrid" id="catgrid"><button class="cat" aria-pressed="${!d.cat}" data-a="pickCat" data-id=""><span>·</span>None</button>${cats.map(c=>`<button class="cat" aria-pressed="${d.cat===c.id}" data-a="pickCat" data-id="${c.id}"><span>${esc(c.icon)}</span>${esc(c.name)}</button>`).join('')}</div></div>`:''}
@@ -1507,7 +1544,7 @@ function guessCat(note,type){
 function acctEdit(){
   const d=SH.d;
   return wrap(SH.edit?'Edit account':'New account',`<div class="formgrid"><label class="f full">Name<input class="in-t" value="${esc(d.name)}" data-d="name" maxlength="30" placeholder="e.g. Wallet"></label>
-  <div class="full"><div class="lbl" style="margin-bottom:6px">Type</div><div class="seg">${[['cash','Cash'],['card','Card'],['bank','Bank']].map(([k,n])=>`<button aria-pressed="${d.kind===k}" data-a="acctKind" data-k="${k}">${n}</button>`).join('')}</div></div>
+  <div class="full"><div class="lbl" style="margin-bottom:6px">Type</div><div class="seg">${[['cash','Cash'],['ewallet','E-wallet'],['card','Card'],['bank','Bank']].map(([k,n])=>`<button aria-pressed="${d.kind===k}" data-a="acctKind" data-k="${k}">${n}</button>`).join('')}</div></div>
   <div class="full"><div class="lbl" style="margin-bottom:6px">Icon</div>${iconGrid(EMO_ACCT,'acctIcon',d.icon)}</div>
   <div class="full"><div class="lbl" style="margin-bottom:8px">Card color</div><div class="swatches">${GRADS.map((g,i)=>`<button class="sw" style="--g:${g}" aria-pressed="${d.color===i}" aria-label="Color ${i+1}" data-a="acctColor" data-k="${i}"></button>`).join('')}</div></div>
   <label class="f">Initial amount<input class="in-t num" inputmode="decimal" value="${esc(d.initial)}" data-d="initial"></label><label class="f">As of date<input class="in-t" type="date" value="${esc(d.openDate)}" data-d="openDate"></label>
@@ -1755,7 +1792,7 @@ Object.assign(A,{
     let txt=($('#restoreText').value||'').trim();const f=$('#restoreFile').files[0];
     if(!txt&&f){try{txt=await f.text()}catch(e){}}
     if(!txt)return toast('Choose a file or paste backup text');
-    let obj;try{obj=JSON.parse(txt)}catch(e){return toast('That is not a valid backup')}
+    let obj;try{obj=JSON.parse(txt)}catch(e){return toast(/\}\s*$/.test(txt)?'That is not a valid backup':'This backup is incomplete (cut off). Use the saved .json file instead.')}
     if(!obj||!Array.isArray(obj.accounts)||!Array.isArray(obj.recs)||!Array.isArray(obj.cats))return toast('That is not a MyWallet backup');
     ask('The current data will be replaced. Are you sure?','Restore',()=>{const keepLock={lock:S.settings.lock,passHash:S.settings.passHash,bio:S.settings.bio};
       S=migrate({...freshState(),...obj});S.badgeInit=false;if(keepLock.lock)Object.assign(S.settings,keepLock);N.bankId=null;N.acct='all';save();applyTheme();render();toast('Restored')});
@@ -2321,7 +2358,7 @@ Object.assign(A,{
     let txt=(($('#wzText')||{}).value||'').trim();const f=$('#wzFile')&&$('#wzFile').files[0];
     if(!txt&&f){try{txt=await f.text()}catch(e){}}
     if(!txt)return toast('Choose a file or paste backup text');
-    let obj;try{obj=JSON.parse(txt)}catch(e){return toast('That is not a valid backup')}
+    let obj;try{obj=JSON.parse(txt)}catch(e){return toast(/\}\s*$/.test(txt)?'That is not a valid backup':'This backup is incomplete (cut off). Use the saved .json file instead.')}
     if(!obj||!Array.isArray(obj.accounts)||!Array.isArray(obj.recs)||!Array.isArray(obj.cats))return toast('That is not a MyWallet backup');
     S=migrate({...freshState(),...obj});S.sample=false;S.firstRun=false;S.badgeInit=false;N.bankId=null;N.acct='all';save();closeWelcome();applyTheme();render();toast('Restored '+S.recs.length+' records');
   },
@@ -2475,36 +2512,38 @@ document.addEventListener('change',e=>{
    debt due dates, receipts gallery, backup reminder
    ===================================================================== */
 
-/* ---------- calculator keypad (replaces the phone keyboard in the Amount field) ---------- */
-const KP={sys:false,want:false};
+/* ---------- calculator keypad (opens only from the calculator button) ---------- */
+const KP={want:false};
 function cpadHtml(){
   const n=(c)=>`<button type="button" data-a="kpKey" data-k="${c}">${c}</button>`;
   const o=(k,l,w)=>`<button type="button" class="op" data-a="calcOp" data-k="${k}" aria-label="${w}">${l}</button>`;
-  return `<div class="cpad" aria-label="Calculator keypad">${n('7')}${n('8')}${n('9')}${o('/','÷','divided by')}${n('4')}${n('5')}${n('6')}${o('*','×','times')}${n('1')}${n('2')}${n('3')}${o('-','−','minus')}${n('.')}${n('0')}<button type="button" data-a="kpBack" aria-label="Delete">⌫</button>${o('+','+','plus')}<button type="button" class="alt" data-a="kpKb" aria-label="Use the phone keyboard">⌨</button><button type="button" class="op" data-a="calcEq" aria-label="equals">=</button><button type="button" class="done" data-a="kpDone">Done</button></div>`;
+  return `<div class="cpad" aria-label="Calculator keypad">${n('7')}${n('8')}${n('9')}${o('/','\u00F7','divided by')}${n('4')}${n('5')}${n('6')}${o('*','\u00D7','times')}${n('1')}${n('2')}${n('3')}${o('-','\u2212','minus')}${n('.')}${n('0')}<button type="button" data-a="kpBack" aria-label="Delete">\u232B</button>${o('+','+','plus')}<button type="button" class="alt" data-a="kpKb" aria-label="Use the phone keyboard">\u2328</button><button type="button" class="op" data-a="calcEq" aria-label="equals">=</button><button type="button" class="done" data-a="kpDone">Done</button></div>`;
 }
-function kpSync(){document.body.classList.toggle('kpon',!!(SH&&SH.kind==='rec'&&KP.want&&!KP.sys))}
+function kpSync(){document.body.classList.toggle('kpon',!!(SH&&SH.kind==='rec'&&KP.want))}
 (function(){
   const _rs=renderSheet;renderSheet=function(){_rs();kpSync()};
-  const _os=openSheet;openSheet=function(s){if(!SH){KP.sys=false}KP.want=false;_os(s)};
+  const _os=openSheet;openSheet=function(s){KP.want=false;_os(s)};
   const _cs=closeSheet;closeSheet=function(){_cs();KP.want=false;kpSync()};
   const setVal=(i,t)=>{i.value=t;i.dispatchEvent(new Event('input',{bubbles:true}))};
   const caret=(i)=>{const s=i.selectionStart==null?i.value.length:i.selectionStart;return [s,i.selectionEnd==null?s:i.selectionEnd]};
-  document.addEventListener('focusin',e=>{const t=e.target;if(!t||!t.tagName)return;
-    if(t.id==='amt'){if(!KP.sys){KP.want=true;kpSync()}}
-    else if(/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)){KP.want=false;kpSync()}});
-  document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.cpad button'))e.preventDefault()});
-  document.addEventListener('click',e=>{if(!KP.want)return;const t=e.target;if(t.closest&&(t.closest('.cpad')||t.closest('.kptog')||t.closest('#amt')||t.closest('label.f:has(#amt)')))return;KP.want=false;kpSync();const i=$('#amt');if(i&&document.activeElement===i)i.blur()});
+  const pad=(on)=>{KP.want=on;kpSync();const i=$('#amt');if(i)i.setAttribute('inputmode',on?'none':'decimal')};
+  const keyboard=()=>{pad(false);const i=$('#amt');if(i){i.blur();setTimeout(()=>{try{i.focus()}catch(e){}},30)}};
+  document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.cpad button,.kptog'))e.preventDefault()});
+  /* tapping the amount box or anywhere else goes back to the normal keyboard / closes the pad */
+  document.addEventListener('click',e=>{if(!KP.want)return;const t=e.target;if(!t.closest||t.closest('.cpad')||t.closest('.kptog'))return;
+    if(t.closest('#amt')){keyboard();return}
+    pad(false);const i=$('#amt');if(i&&document.activeElement===i)i.blur()});
   Object.assign(A,{
-    kpKey:d=>{const i=$('#amt');if(!i)return;const [s,e]=caret(i);let c=d.k;
-      if(c==='.'){const seg=i.value.slice(0,s).split(/[+−×÷*\/-]/).pop();if(seg.includes('.'))return}
+    kpMode:()=>{const i=$('#amt');if(KP.want){keyboard();return}pad(true);if(i){i.blur();setTimeout(()=>{try{i.focus({preventScroll:true})}catch(e){}},0)}},
+    kpKey:d=>{const i=$('#amt');if(!i)return;const [s,e]=caret(i);const c=d.k;
+      if(c==='.'){const seg=i.value.slice(0,s).split(/[+\u2212\u00D7\u00F7*\/-]/).pop();if(seg.includes('.'))return}
       setVal(i,i.value.slice(0,s)+c+i.value.slice(e));try{i.setSelectionRange(s+1,s+1)}catch(x){}haptic(5)},
     kpBack:()=>{const i=$('#amt');if(!i)return;const [s,e]=caret(i);
       if(e>s){setVal(i,i.value.slice(0,s)+i.value.slice(e));try{i.setSelectionRange(s,s)}catch(x){}}
       else if(s>0){setVal(i,i.value.slice(0,s-1)+i.value.slice(s));try{i.setSelectionRange(s-1,s-1)}catch(x){}}haptic(5)},
     kpDone:()=>{const i=$('#amt');if(i&&hasOp(i.value)){const r=calc(i.value);if(isNaN(r))return toast('Check the calculation');setVal(i,String(r))}
-      KP.want=false;kpSync();if(i)i.blur()},
-    kpMode:()=>{const i=$('#amt');if(KP.sys){KP.sys=false;KP.want=true;renderSheet();const a=$('#amt');if(a){a.setAttribute('inputmode','none');a.blur()}}else A.kpKb()},
-    kpKb:()=>{const i=$('#amt');KP.sys=true;KP.want=false;kpSync();renderSheet();const a=$('#amt');if(a){a.setAttribute('inputmode','decimal');setTimeout(()=>a.focus(),30)}}
+      pad(false);if(i)i.blur()},
+    kpKb:()=>keyboard()
   });
 })();
 
@@ -2763,6 +2802,216 @@ function flames(n,max,cls){
   return Array.from({length:k},()=>`<span class="flame ${cls||''}">🔥</span>`).join('')+(n>=100&&max>3?'<span class="flame">👑</span>':'');
 }
 (function(){const _vb=vBadges2;vBadges2=function(){return _vb().replace('<span class="flame big3">🔥</span>',`<span class="flms">${flames(streak(),5,'f5')}${streak()>=100?'<span>👑</span>':''}</span>`)};MORE.badges=vBadges2})();
+
+/* =====================================================================
+   FEATURES, PART 7: TikTok-style streak flame, full-screen receipt viewer,
+   e-wallet defaults
+   ===================================================================== */
+
+/* ---------- streak flame that changes with the streak (like TikTok) ---------- */
+const FL_STEPS=[[0,'Cold'],[1,'Spark'],[3,'Flame'],[7,'Blaze'],[14,'Blue flame'],[30,'Violet flame'],[60,'Rose flame'],[100,'Legend']];
+const FL_COL=[['#B9C2C3','#8B9899','#DDE3E4'],['#FFAA3D','#FF6A1F','#FFE08A'],['#FF8A2A','#F0281C','#FFD36B'],['#FFD83F','#FF7A00','#FFF4B0'],['#7BD8FF','#1E6BFF','#DDF4FF'],['#CE92FF','#6A2BD9','#F0DEFF'],['#FF92DC','#C2188F','#FFDDF3'],['rainbow']];
+const flameTier=n=>{let t=0;FL_STEPS.forEach((s,i)=>{if(i>0&&n>=s[0])t=i});return t};
+function flameSvg(tier,px){
+  const c=FL_COL[tier],id='flg'+tier+'_'+px,rb=c[0]==='rainbow';
+  const grad=rb
+    ?`<linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#7A3CFF"/><stop offset=".3" stop-color="#1E9BFF"/><stop offset=".55" stop-color="#2FD27A"/><stop offset=".78" stop-color="#FFD23F"/><stop offset="1" stop-color="#FF3B30"/></linearGradient>`
+    :`<linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[0]}"/></linearGradient>`;
+  const inner=rb?'#FFF6D8':c[2],f=`url(#${id})`;
+  const P='M12.4 1.6c.6 3.4-1.1 4.9-2.7 6.9C8 10.6 6.2 12.8 6.2 15.7a5.9 5.9 0 0 0 5.8 5.9 5.9 5.9 0 0 0 5.8-6.1c0-2.5-1.2-4.4-2.3-5.7-.3 1.4-1 2.2-1.9 2.6.8-3.4-.1-7.2-1.2-10.8z';
+  const C='M12 21.6a3.3 3.3 0 0 1-3.3-3.4c0-1.6.9-2.5 1.7-3.5.4-.6.8-1.2.9-2.1 1.5 1.4 4 3.1 4 5.6a3.3 3.3 0 0 1-3.3 3.4z';
+  const fl=(x,y,s,o)=>`<path d="${P}" fill="${f}" transform="translate(${x} ${y}) scale(${s})"${o?` opacity="${o}"`:''}/>`;
+  const core=(x,y,s)=>`<path d="${C}" fill="${inner}" opacity=".92" transform="translate(${x} ${y}) scale(${s})"/>`;
+  const sp=(x,y,r,col)=>`<path d="M${x} ${y-r}l${r*.28} ${r*.72} ${r*.72} ${r*.28}-${r*.72} ${r*.28}-${r*.28} ${r*.72}-${r*.28}-${r*.72}-${r*.72}-${r*.28} ${r*.72}-${r*.28}z" fill="${col}"/>`;
+  const dot=(x,y,r,col)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>`;
+  const side=fl(-1.44,8.2,.62,.85)+fl(10.56,8.2,.62,.85);
+  let g='';
+  if(tier===0)g=fl(3.4,6.6,.7)+core(3.4,6.6,.7)+dot(18,6,.9,'#B9C2C3')+dot(20.5,10,.6,'#B9C2C3');       // dying ember
+  else if(tier===1)g=fl(2.4,4.4,.8)+core(2.4,4.4,.8)+sp(19.5,5,2.4,'#FFE08A');                              // spark
+  else if(tier===2)g=fl(0,0,1)+core(0,0,1);                                                                  // flame
+  else if(tier===3)g=side+fl(0,0,1)+core(0,0,1);                                                             // blaze: three tongues
+  else if(tier===4)g=side+fl(0,0,1)+core(0,0,1)+dot(4,5,.9,c[0])+dot(20,4,.9,c[0])+dot(12,.9,.7,c[2]);        // blue: embers above
+  else if(tier===5)g=side+fl(0,0,1)+core(0,0,1)+sp(3.6,5,2.6,c[0])+sp(20.4,5,2.6,c[0])+sp(20,15,1.6,c[2]);    // violet: sparkles
+  else if(tier===6)g=`<circle cx="12" cy="13" r="10.6" fill="none" stroke="${c[0]}" stroke-width=".9" opacity=".55" stroke-dasharray="2 2"/>`+side+fl(0,0,1)+`<path d="M12 20.4c-3.1-2.1-4.1-3.7-4.1-5.1a2.1 2.1 0 0 1 4.1-.7 2.1 2.1 0 0 1 4.1.7c0 1.4-1 3-4.1 5.1z" fill="${inner}"/>`; // rose: halo + heart core
+  else g=`<path d="M6.8 13.5C2.4 12.6.9 8.8 1.4 4.6c3.2.7 5.6 2.6 6.9 5.2zM17.2 13.5c4.4-.9 5.9-4.7 5.4-8.9-3.2.7-5.6 2.6-6.9 5.2z" fill="#FFE27A"/><path d="M7.4 16.5C3.8 17 1.6 14.8 1 11.8c2.9-.1 5.1.9 6.4 3zM16.6 16.5c3.6.5 5.8-1.7 6.4-4.7-2.9-.1-5.1.9-6.4 3z" fill="#FFC93C" opacity=".9"/>`+fl(0,0,1)+core(0,0,1)+sp(12,.4,2.2,'#FFE27A'); // legend: wings + star
+  return `<svg class="flsvg" viewBox="0 0 24 24" width="${px}" height="${px}" aria-hidden="true"><defs>${grad}</defs>${g}</svg>`;
+}
+const flameLit=()=>!!(S.settings.dev&&S.dev&&S.dev.streak!=null)||loggedDays().has(TD());
+function flames(n,max,cls){
+  const real=flameTier(n),lit=flameLit(),t=n>0&&!lit?0:real,big=cls==='f5';
+  return `<span class="fl t${t}${big?' big':''}">${flameSvg(t,big?52:22)}</span>`;
+}
+function flameCard(st,best){
+  const lit=flameLit(),real=flameTier(st),t=st>0&&!lit?0:real,nx=FL_STEPS[real+1];
+  const prev=FL_STEPS[real][0],pct=nx?Math.round((st-prev)/(nx[0]-prev)*100):100;
+  const ladder=FL_STEPS.slice(1).map((s,i)=>`<span class="lad${real>=i+1?' on':''}" title="${s[0]}+ days · ${s[1]}">${flameSvg(i+1,26)}<small>${s[0]}</small></span>`).join('');
+  return `<div class="card stack" style="gap:12px"><div class="flhead"><span class="fl t${t} big">${flameSvg(t,52)}</span><div class="stxt"><div class="mid num">${st} day${st===1?'':'s'}</div><div class="sub">${esc(FL_STEPS[real][1])} · Best: ${best}</div>
+  ${st>0&&!lit?'<div class="sub warnt">⏳ Log something today to keep your flame lit.</div>':''}</div></div>
+  <div><div class="bar"><i style="width:${pct}%"></i></div><div class="sub" style="margin-top:6px">${nx?`${nx[0]-st} more day${nx[0]-st===1?'':'s'} to the ${esc(nx[1])}.`:'Top flame reached!'}</div></div>
+  <div class="flladder">${ladder}</div></div>`;
+}
+(function(){const _vb=vBadges2;vBadges2=function(){const st=streak();
+  return _vb().replace(/<div class="card streakc">[\s\S]*?Best: \d+<\/div><\/div><\/div>/,flameCard(st,longestStreak()))};MORE.badges=vBadges2})();
+
+/* ---------- e-wallet: friendly default icon ---------- */
+(function(){const _ak=A.acctKind;A.acctKind=function(d){if(d.k==='ewallet'&&['💵','🏦','💳','👛'].includes(SH.d.icon))SH.d.icon='📱';
+  else if(d.k==='bank'&&SH.d.icon==='📱')SH.d.icon='🏦';else if(d.k==='cash'&&SH.d.icon==='📱')SH.d.icon='💵';_ak(d)}})();
+
+/* ---------- full-screen receipt viewer ---------- */
+function openImgv(src){
+  closeImgv();const el=document.createElement('div');el.id='imgv';el.setAttribute('role','dialog');el.setAttribute('aria-label','Receipt photo');
+  el.innerHTML=`<button class="iconbtn" data-a="imgvClose" aria-label="Close">${ic('x')}</button><div class="imgvbox"><img alt="Receipt photo"></div><div class="imgvhint">Tap the photo to zoom</div>`;
+  el.querySelector('img').src=src;document.body.appendChild(el);
+}
+function closeImgv(){const e=$('#imgv');if(e)e.remove()}
+A.imgvClose=()=>closeImgv();
+document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
+  const im=t.closest('.rcpt img');if(im){openImgv(im.src);return}
+  const v=t.closest('#imgv img');if(v){v.parentElement.classList.toggle('zoom');return}
+  if(t.id==='imgv'||t.classList.contains('imgvbox'))closeImgv()});
+(function(){const _b=window.__back;window.__back=function(){if($('#imgv')){closeImgv();return true}return _b?_b():false}})();
+
+/* =====================================================================
+   FEATURES, PART 8: developer mode (secret: tap the version 7 times in Menu)
+   ===================================================================== */
+const APP_VERSION='1.1.0';
+window.__devOff=(S.settings.dev&&S.dev&&S.dev.off)||0;N.month=todayStr().slice(0,7);
+const devOn=()=>!!S.settings.dev;
+const devS=()=>(S.dev=S.dev||{});
+
+/* overrides that only work while developer mode is on */
+(function(){
+  const _si=streakInfo;streakInfo=function(){const r=_si();if(devOn()&&S.dev&&S.dev.streak!=null)r.count=+S.dev.streak||0;return r};
+  const _li=levelInfo;levelInfo=function(){
+    if(!(devOn()&&S.dev&&S.dev.xp!=null))return _li();
+    const xp=+S.dev.xp||0;let i=0;LEVELS.forEach((l,k)=>{if(xp>=l[0])i=k});const cur=LEVELS[i],nx=LEVELS[i+1];
+    return {i,xp,name:cur[1],next:nx?nx[1]:null,need:nx?nx[0]-xp:0,pct:nx?Math.round((xp-cur[0])/(nx[0]-cur[0])*100):100}};
+})();
+
+/* secret unlock: tap the version line 7 times */
+let verTaps=0,verT=0;
+A.verTap=()=>{
+  if(devOn()){toast('Developer mode is already on');return}
+  clearTimeout(verT);verT=setTimeout(()=>{verTaps=0},2000);verTaps++;
+  if(verTaps>=7){verTaps=0;S.settings.dev=true;save();haptic(30);render();toast('Developer mode is on. Find it in the Menu.')}
+  else if(verTaps>=4)toast(`${7-verTaps} more tap${7-verTaps===1?'':'s'} to unlock developer mode`);
+};
+(function(){const _vm=vMore;vMore=function(){
+  const h=_vm();if(N.more)return h;
+  const dev=devOn()?`<div class="lbl sec">Developer</div><div class="list menu"><button class="row" data-a="more" data-k="dev"><span class="ico">🛠️</span><span class="rmain"><b>Developer tools <span class="devtag">DEV</span></b><small>Test and change anything</small></span>${ic('right')}</button></div>`:'';
+  const ver=`<button class="verline" data-a="verTap" aria-label="App version">MyWallet v${APP_VERSION}</button>`;
+  const i=h.indexOf('<button class="btn ghost block" data-a="resetAsk">');
+  let out=i<0?h:h.slice(0,i)+dev+h.slice(i);
+  return out.replace(/<\/p><\/div>$/,'</p>'+ver+'</div>');
+}})();
+
+/* helpers */
+const RNOTES=['Lunch','Bus','Coffee','Snacks','Load','Movie','Groceries','Notebook','Allowance','Gift','Grab','Milk tea'];
+function devAddRecords(n){
+  const accs=S.accounts.filter(a=>!a.ignored),T=TD(),ex=S.cats.filter(c=>c.type==='expense'&&!c.ignored),inc=S.cats.filter(c=>c.type==='income'&&!c.ignored);
+  if(!accs.length)return 0;
+  for(let i=0;i<n;i++){const isInc=Math.random()<.18,a=accs[Math.floor(Math.random()*accs.length)],cs=isInc?inc:ex,c=cs[Math.floor(Math.random()*cs.length)];
+    S.recs.push({id:uid(),ts:Date.now()+i,type:isInc?'income':'expense',acct:a.id,to:'',cat:c?c.id:'',amount:Math.round((isInc?200+Math.random()*3000:5+Math.random()*450)*100)/100,date:fromDn(T-Math.floor(Math.random()*60)),note:RNOTES[Math.floor(Math.random()*RNOTES.length)]})}
+  return n;
+}
+const numIn=id=>{const el=$('#'+id);return el&&el.value.trim()!==''?Number(el.value):null};
+
+/* the screen */
+function vDev(){
+  const real=ymd(new Date()),off=window.__devOff||0,d=devS();
+  const btn=(a,k,t,cls)=>`<button class="btn ${cls||'ghost'} sm" data-a="${a}"${k!=null?` data-k="${k}"`:''}>${t}</button>`;
+  const json=JSON.stringify({...S,photos:undefined},null,1);
+  return backHead('Developer tools')+`<div class="stack">
+  <div class="card stack"><div><b>Time travel</b><div class="sub">App date: <b>${esc(todayStr())}</b>${off?` (real: ${esc(real)}, ${off>0?'+':''}${off} days)`:' (real date)'}. Bills, streaks, periods and reminders all follow it.</div></div>
+  <div class="chips wrap">${[-30,-7,-1,1,7,30].map(v=>btn('devTime',v,(v>0?'+':'')+v+'d')).join('')}${btn('devTime',0,'Reset','')}</div></div>
+  <div class="card stack"><div><b>Streak and level</b><div class="sub">Pretend values to preview flames and levels. Leave a box empty and tap Clear to go back to real values.</div></div>
+  <div class="formgrid"><label class="f">Streak (days)<input class="in-t num" id="devStreak" inputmode="numeric" placeholder="${d.streak!=null?d.streak:'real: '+streakInfo().count}" value="${d.streak!=null?d.streak:''}"></label><label class="f">Records (for level)<input class="in-t num" id="devXp" inputmode="numeric" placeholder="${d.xp!=null?d.xp:'real'}" value="${d.xp!=null?d.xp:''}"></label></div>
+  <div class="row2"><button class="btn sm" data-a="devFake">Apply</button>${btn('devFakeClear',null,'Clear')}</div>
+  <div class="chips wrap">${[0,1,3,7,14,30,60,100].map(v=>btn('devStreakSet',v,v+'d')).join('')}</div></div>
+  <div class="card stack"><div><b>Set an account balance</b></div>
+  <div class="formgrid"><label class="f">Account<select class="in-t" id="devAcct">${S.accounts.map(a=>`<option value="${a.id}">${esc(a.icon+' '+a.name)}</option>`).join('')}</select></label><label class="f">Balance should be<input class="in-t num" id="devBal" inputmode="decimal" placeholder="0"></label></div>
+  <button class="btn sm" data-a="devSetBal">Set balance</button></div>
+  <div class="card stack"><div><b>Data tools</b></div><div class="chips wrap">
+  ${btn('devRecs',30,'+30 records')}${btn('devRecs',200,'+200 records')}${btn('devBadges',null,d.badges?'Badges: all on':'Unlock all badges')}${d.badges?btn('devBadgesOff',null,'Reset badges'):''}${btn('devDebts',null,'+3 sample debts')}${btn('devClearDebts',null,'Clear debts')}${btn('devClearRecs',null,'Delete all records','danger')}${btn('devStale',null,'Fake old backup')}${btn('devLockNow',null,'Lock app now')}${btn('devRecurring',null,'Run recurring now')}${btn('devPhotos',null,'Clear photos')}${btn('devWelcome',null,'Show welcome again')}${btn('devToast',null,'Test toast')}${btn('devConfetti',null,'Confetti')}</div></div>
+  <div class="card stack"><div><b>Reminder preview</b><div class="sub">What the daily reminder would say for today and tomorrow.</div></div>${[0,1].map(i=>{const l=linesFor(TD()+i,i===0);return `<div class="sub"><b>${i?'Tomorrow':'Today'}:</b> ${l.length?l.map(esc).join(' · '):'nothing to say'}</div>`}).join('')}</div>
+  <div class="card stack"><div><b>Storage</b><div class="sub">${S.recs.length} records · ${S.accounts.length} accounts · ${S.debts.length} debts · ${Object.keys(S.photos||{}).length} photos · about ${Math.round(((localStorage.getItem('ipon.v1')||'').length)/1024)} KB saved</div></div></div>
+  <div class="card stack"><div><b>Edit everything (JSON)</b><div class="sub">This is all your app data, without photos. Change any value, then Apply. A mistake can break the app, so make a backup first.</div></div>
+  <textarea class="devbox" id="devJson" spellcheck="false">${esc(json)}</textarea>
+  <div class="row2"><button class="btn sm" data-a="devApply">Apply</button>${btn('devCopy',null,'Copy')}</div></div>
+  <button class="btn danger block" data-a="devOff">Turn off developer mode</button></div>`;
+}
+MORE.dev=vDev;
+Object.assign(A,{
+  devTime:d=>{const v=+d.k;devS().off=v===0?0:(devS().off||0)+v;window.__devOff=devS().off;N.month=todayStr().slice(0,7);save();render();try{runRecurring()}catch(e){}},
+  devFake:()=>{const s=numIn('devStreak'),x=numIn('devXp'),d=devS();d.streak=s;d.xp=x;save();render();toast('Applied')},
+  devFakeClear:()=>{const d=devS();d.streak=null;d.xp=null;save();render()},
+  devStreakSet:d=>{devS().streak=+d.k;save();render()},
+  devSetBal:()=>{const a=acc(($('#devAcct')||{}).value),t=numIn('devBal');if(!a||t==null||isNaN(t))return toast('Pick an account and a number');
+    const cur=balanceNow(a);a.initial=(Number(a.initial)||0)+(t-cur);save();render();toast(`${a.name} is now ${money(t)}`)},
+  devRecs:d=>{const n=devAddRecords(+d.k);save();render();toast(`Added ${n} records`)},
+  devBadges:()=>{devS().badges=true;S.unlocked=BADGES.map(b=>b[0]);save();render();toast('All badges unlocked');try{confetti()}catch(e){}},
+  devBadgesOff:()=>{devS().badges=false;S.unlocked=[...earnedBadges()];save();render();toast('Badges back to real')},
+  devDebts:()=>{const T=TD(),mk=(who,amt,they,due,note)=>({id:uid(),who,amount:amt,theyOweMe:they,due,date:fromDn(T),note,paid:false});
+    S.debts.push(mk('Mika',250,true,fromDn(T+3),'Lunch'),mk('Kuya Ben',1200,false,fromDn(T-2),'Boarding'),mk('Jo',80,true,'', 'Load'));save();render();toast('Added 3 debts')},
+  devClearDebts:()=>ask('Delete all debts?','Delete',()=>{S.debts=[];save();render()}),
+  devClearRecs:()=>ask('Delete ALL records? Accounts stay.','Delete',()=>{S.recs=[];save();render();toast('Records deleted')}),
+  devStale:()=>{S.lastBackup=Date.now()-40*864e5;S.backupSnooze=0;S.sample=false;save();render();toast('Backup looks 40 days old. Check Home.')},
+  devLockNow:()=>{if(!S.settings.passHash)return toast('Set a passcode first');try{showLock()}catch(e){toast('Could not lock')}},
+  devRecurring:()=>{let n=0;try{n=runRecurring()}catch(e){}save();render();toast(`Added ${n||0} recurring records`)},
+  devPhotos:()=>ask('Delete all receipt photos?','Delete',()=>{S.photos={};save();render()}),
+  devWelcome:()=>{S.firstRun=true;save();showWelcome()},
+  devToast:()=>toast('This is a test toast',()=>{}),
+  devConfetti:()=>{try{confetti()}catch(e){}},
+  devApply:()=>{const el=$('#devJson');if(!el)return;let o;try{o=JSON.parse(el.value)}catch(e){return toast('That JSON has an error: '+String(e.message).slice(0,60))}
+    if(!o||!Array.isArray(o.accounts)||!Array.isArray(o.recs)||!Array.isArray(o.cats))return toast('Needs accounts, recs and cats lists');
+    ask('Replace your data with this?','Apply',()=>{const photos=S.photos;S=migrate({...freshState(),...o,photos:o.photos||photos});S.settings.dev=true;window.__devOff=(S.dev&&S.dev.off)||0;N.month=todayStr().slice(0,7);save();applyTheme();render();toast('Applied')})},
+  devCopy:async()=>{const el=$('#devJson');if(!el)return;try{await navigator.clipboard.writeText(el.value);toast('Copied')}catch(e){el.select();toast('Select and copy it')}},
+  devOff:()=>ask('Turn off developer mode? Fake values and time travel will be cleared.','Turn off',()=>{window.__devOff=0;S.dev=null;S.settings.dev=false;N.month=todayStr().slice(0,7);N.more=null;N.tab='more';save();render();toast('Developer mode is off')})
+});
+
+/* ---------- streak reminder in notifications ---------- */
+(function(){
+  const _lf=linesFor;
+  linesFor=function(dd,first){
+    const out=_lf(dd,first);
+    if(S.settings.streakAlert===false)return out;
+    const T=TD(),st=streakInfo().count,lit=loggedDays().has(T);
+    if(st<2)return out;
+    if(dd===T){if(!lit)out.push(`Your ${st}-day streak ends tonight. Log something to keep your flame lit.`)}
+    else if(dd>T)out.push('Keep your streak going. Log something today.');
+    return out;
+  };
+  const _vr=vRemind;
+  vRemind=function(){
+    const h=_vr(),on=S.settings.streakAlert!==false;
+    const row=`<div class="card stack"><div style="display:flex;align-items:center;gap:10px"><div style="flex:1"><b>Streak reminder</b><div class="sub">Remind me to log something so my flame stays lit.</div></div><button class="toggle" role="switch" aria-checked="${on}" aria-label="Streak reminder" data-a="streakToggle"><i></i></button></div></div>`;
+    const i=h.indexOf('<div class="lbl sec">Right now</div>');
+    return i<0?h:h.slice(0,i)+row+h.slice(i);
+  };
+  MORE.remind=vRemind;
+  A.streakToggle=()=>{S.settings.streakAlert=S.settings.streakAlert===false;save();render()};
+})();
+
+
+/* ---------- badges: dev unlock-all is honoured by the badge screen ---------- */
+(function(){
+  const _eb=earnedBadges;
+  earnedBadges=function(){const e=_eb();if(S.settings.dev&&S.dev&&S.dev.badges)BADGES.forEach(b=>e.add(b[0]));return e};
+})();
+
+/* ---------- open debts on Home ---------- */
+function homeDebts(){
+  const open=S.debts.filter(d=>!d.paid);if(!open.length)return '';
+  const T=TD(),key=d=>d.due?dn(d.due):1e9,sorted=[...open].sort((a,b)=>key(a)-key(b));
+  const owed=sum(open.filter(d=>d.theyOweMe).map(d=>d.amount)),iowe=sum(open.filter(d=>!d.theyOweMe).map(d=>d.amount));
+  const late=open.filter(d=>d.due&&dn(d.due)<T).length;
+  const row=d=>`<button class="row" data-a="debtView" data-id="${d.id}"><span class="ico">${d.theyOweMe?'👉':'👈'}</span><span class="rmain"><b>${esc(d.who)}</b><small>${d.theyOweMe?'Owes you':'You owe'} · ${debtWhen(d)}</small></span><span class="amt ${d.theyOweMe?'in':'out'}">${hid(d.amount)}</span></button>`;
+  const more=open.length>3?`<button class="alert more" data-a="go" data-t="more" data-k="debts">See all ${open.length} debts</button>`:'';
+  return `<div class="hdebts"><div class="sech"><span class="lbl">Debts${late?` · <span class="out">${late} overdue</span>`:''}</span><button class="btn ghost sm" data-a="go" data-t="more" data-k="debts">Open</button></div>
+  <div class="pills2"><div class="card"><div class="lbl">Owed to you</div><div class="mid num in">${hid(owed)}</div></div><div class="card"><div class="lbl">You owe</div><div class="mid num out">${hid(iowe)}</div></div></div>
+  <div class="list">${sorted.slice(0,3).map(row).join('')}</div>${more}</div>`;
+}
+(function(){const _ha=homeAlerts;homeAlerts=function(){return _ha()+homeDebts()}})();
 
 boot();
 
