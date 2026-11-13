@@ -557,15 +557,16 @@ button,.row,.chip,.cat,.btn{touch-action:manipulation;-webkit-tap-highlight-colo
 .calcline{display:block;text-align:right;min-height:18px}
 /* streak flame */
 .fl{display:inline-grid;place-items:center;line-height:0;filter:drop-shadow(0 0 5px var(--fg,rgba(255,120,30,.55)))}
-.fl.t0{filter:none;opacity:.9}.fl.t1{--fg:rgba(255,110,30,.5)}.fl.t2{--fg:rgba(240,40,28,.55)}.fl.t3{--fg:rgba(255,170,0,.6)}.fl.t4{--fg:rgba(40,130,255,.6)}.fl.t5{--fg:rgba(130,60,230,.6)}.fl.t6{--fg:rgba(220,30,150,.6)}.fl.t7{--fg:rgba(255,200,60,.7)}
+.fl.t0{filter:none;opacity:.9}.fl.t1{--fg:rgba(255,110,30,.5)}.fl.t2{--fg:rgba(240,40,28,.55)}.fl.t3{--fg:rgba(255,170,0,.6)}.fl.t4{--fg:rgba(40,130,255,.6)}.fl.t5{--fg:rgba(130,60,230,.6)}.fl.t6{--fg:rgba(220,30,150,.6)}.fl.t7{--fg:rgba(255,200,60,.7)}.fl.t8{--fg:rgba(255,190,0,.8)}.fl.t9{--fg:rgba(20,200,110,.7)}.fl.t10{--fg:rgba(230,40,70,.75)}.fl.t11{--fg:rgba(160,140,255,.9)}.fl.t8,.fl.t9,.fl.t10{filter:drop-shadow(0 0 3px var(--fg))}.fl.t11{filter:drop-shadow(0 0 3px var(--fg)) drop-shadow(0 0 7px rgba(255,150,230,.3))}
 .streak .fl{margin-right:1px}
 .streak .fl .flsvg{display:block}
 @media (prefers-reduced-motion:no-preference){.fl:not(.t0){animation:flick 1.8s ease-in-out infinite;transform-origin:50% 90%}}
 .flhead{display:flex;align-items:center;gap:14px}.flhead .stxt{min-width:0}
 .warnt{color:var(--warn)}
-.flladder{display:flex;justify-content:space-between;gap:4px}
-.flladder .lad{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.38;filter:grayscale(1)}
-.flladder .lad.on{opacity:1;filter:none}
+.flladder{display:grid;grid-template-columns:repeat(6,1fr);gap:10px 4px}
+.flladder .lad{display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.7}
+.flladder .lad.on{opacity:1}
+.flladder .lad:not(.on) small{opacity:.7}
 .flladder small{font-size:10px;color:var(--mute);font-weight:700}
 /* receipt viewer */
 .rcpt img{cursor:zoom-in}
@@ -584,6 +585,8 @@ html.locked #imgv{display:none}
 .devtag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:2px 7px;margin-left:6px;vertical-align:middle}
 .devbox{width:100%;min-height:200px;font:12px/1.4 ui-monospace,Consolas,monospace;border-radius:14px;padding:10px;background:var(--surface);color:var(--ink);border:1px solid var(--line);resize:vertical}
 .hdebts{display:flex;flex-direction:column;gap:8px}.hdebts .sech{margin:0}
+
+@keyframes orb{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:no-preference){.flsvg .orb{transform-origin:12px 12.5px;animation:orb 16s linear infinite}}
 
 </style>
 
@@ -1332,7 +1335,7 @@ function pushNative(){
 /* ---------- badges ---------- */
 const BADGES=[
  ['first','First step','Log your first record','🌱'],['rec25','Getting going','Log 25 records','📒'],['rec100','Record keeper','Log 100 records','📚'],
- ['streak3','On a roll','Log 3 days in a row','🔥'],['streak7','Week warrior','Log 7 days in a row','⚡'],['streak30','Unstoppable','Log 30 days in a row','👑'],
+ ['streak3','On a roll','Log 3 days in a row','🔥'],['streak7','Week warrior','Log 7 days in a row','⚡'],['streak30','Unstoppable','Log 30 days in a row','👑'],['streak100','Century','Log 100 days in a row','💎'],['streak365','Full year','Log 365 days in a row','🌟'],
  ['save1k','First 1,000','Hold 1,000 or more in total','💰'],['goal','Goal getter','Reach a savings goal','🎯'],['budget','Under budget','End a month with every budget in the green','🛡️'],
  ['debt','Square up','Settle a debt','🤝'],['planner','Planner','Set your payday','🗓️'],['bank','Bank safe','Keep a bank account on track','🏦']
 ];
@@ -1341,7 +1344,7 @@ const goalSaved=g=>{const a=goalAcct(g);return a?Math.max(0,balBase(a)):sum((g.c
 function earnedBadges(){
   const e=new Set(),n=S.recs.filter(r=>r.type!=='check').length,ls=longestStreak();
   if(n>=1)e.add('first');if(n>=25)e.add('rec25');if(n>=100)e.add('rec100');
-  if(ls>=3)e.add('streak3');if(ls>=7)e.add('streak7');if(ls>=30)e.add('streak30');
+  if(ls>=3)e.add('streak3');if(ls>=7)e.add('streak7');if(ls>=30)e.add('streak30');if(ls>=100)e.add('streak100');if(ls>=365)e.add('streak365');
   if(n>=1&&sum(S.accounts.map(balBase))>=1000)e.add('save1k');
   if(S.goals.some(g=>g.target>0&&goalSaved(g)>=g.target))e.add('goal');
   const d=new Date(TD()*864e5),pm=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()-1,1)),key=pm.getUTCFullYear()+'-'+pad(pm.getUTCMonth()+1);
@@ -2809,32 +2812,51 @@ function flames(n,max,cls){
    ===================================================================== */
 
 /* ---------- streak flame that changes with the streak (like TikTok) ---------- */
-const FL_STEPS=[[0,'Cold'],[1,'Spark'],[3,'Flame'],[7,'Blaze'],[14,'Blue flame'],[30,'Violet flame'],[60,'Rose flame'],[100,'Legend']];
-const FL_COL=[['#B9C2C3','#8B9899','#DDE3E4'],['#FFAA3D','#FF6A1F','#FFE08A'],['#FF8A2A','#F0281C','#FFD36B'],['#FFD83F','#FF7A00','#FFF4B0'],['#7BD8FF','#1E6BFF','#DDF4FF'],['#CE92FF','#6A2BD9','#F0DEFF'],['#FF92DC','#C2188F','#FFDDF3'],['rainbow']];
+const FL_STEPS=[[0,'Cold'],[1,'Spark'],[3,'Flame'],[7,'Blaze'],[14,'Blue flame'],[30,'Violet flame'],[60,'Rose flame'],[100,'Legend'],[150,'Solar flame'],[200,'Emerald flame'],[300,'Crimson crown'],[365,'Eternal flame']];
+const FL_COL=[['#B9C2C3','#8B9899','#DDE3E4'],['#FFAA3D','#FF6A1F','#FFE08A'],['#FF8A2A','#F0281C','#FFD36B'],['#FFD83F','#FF7A00','#FFF4B0'],['#7BD8FF','#1E6BFF','#DDF4FF'],['#CE92FF','#6A2BD9','#F0DEFF'],['#FF92DC','#C2188F','#FFDDF3'],['rainbow'],['#FFF3A0','#FFA800','#FFFFFF'],['#8CFFC0','#0A9F5B','#E3FFF0'],['#FF6B6B','#8E0C2B','#FFD9D9'],['diamond']];
 const flameTier=n=>{let t=0;FL_STEPS.forEach((s,i)=>{if(i>0&&n>=s[0])t=i});return t};
-function flameSvg(tier,px){
-  const c=FL_COL[tier],id='flg'+tier+'_'+px,rb=c[0]==='rainbow';
-  const grad=rb
-    ?`<linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#7A3CFF"/><stop offset=".3" stop-color="#1E9BFF"/><stop offset=".55" stop-color="#2FD27A"/><stop offset=".78" stop-color="#FFD23F"/><stop offset="1" stop-color="#FF3B30"/></linearGradient>`
-    :`<linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[0]}"/></linearGradient>`;
-  const inner=rb?'#FFF6D8':c[2],f=`url(#${id})`;
+function flameSvg(tier,px,locked){
+  const sk=locked?'':FL_COL[tier][0],rb=sk==='rainbow'||sk==='diamond',c=locked?['#C3CBCC','#9AA6A7','#E4E9EA']:FL_COL[tier],id='flg'+tier+'_'+px+(locked?'x':''),big=tier>=8;
+  const SP=sk==='diamond'?'<stop offset="0" stop-color="#4FD0FF"/><stop offset=".4" stop-color="#A98BFF"/><stop offset=".7" stop-color="#FF8FDA"/><stop offset="1" stop-color="#FFE9A0"/>':'<stop offset="0" stop-color="#7A3CFF"/><stop offset=".3" stop-color="#1E9BFF"/><stop offset=".55" stop-color="#2FD27A"/><stop offset=".78" stop-color="#FFD23F"/><stop offset="1" stop-color="#FF3B30"/>';
+  const stops=rb?SP:`<stop offset="0" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[0]}"/>`;
+  const grad=`<linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0">${stops}</linearGradient>`;
+  const gradU=`<linearGradient id="${id}u" gradientUnits="userSpaceOnUse" x1="0" y1="21.6" x2="0" y2="1.6">${stops}</linearGradient>`;
+  const clip=`<clipPath id="${id}c"><path d="M-2 -2H26V16.5C26 19.8 19 21.6 12 21.6S-2 19.8-2 16.5Z"/></clipPath>`;
+  const ac=locked?c[0]:sk==='diamond'?'#B79BFF':sk==='rainbow'?'#FFC85A':c[0];
+  const auraDef=`<radialGradient id="${id}a"><stop offset="0" stop-color="${ac}" stop-opacity=".6"/><stop offset="1" stop-color="${ac}" stop-opacity="0"/></radialGradient>`;
+  const aura=(r,o)=>`<circle cx="12" cy="12.5" r="${r}" fill="url(#${id}a)" opacity="${o}"/>`;
+  const base=`<path d="M3.4 17.4C3.4 14.6 7.2 13.4 12 13.4S20.6 14.6 20.6 17.4C20.6 20.2 17 21.6 12 21.6S3.4 20.2 3.4 17.4Z" fill="url(#${id}u)"/>`;
+  const inner=sk==='diamond'?'#FFFFFF':rb?'#FFF6D8':c[2],f=`url(#${id})`;
   const P='M12.4 1.6c.6 3.4-1.1 4.9-2.7 6.9C8 10.6 6.2 12.8 6.2 15.7a5.9 5.9 0 0 0 5.8 5.9 5.9 5.9 0 0 0 5.8-6.1c0-2.5-1.2-4.4-2.3-5.7-.3 1.4-1 2.2-1.9 2.6.8-3.4-.1-7.2-1.2-10.8z';
   const C='M12 21.6a3.3 3.3 0 0 1-3.3-3.4c0-1.6.9-2.5 1.7-3.5.4-.6.8-1.2.9-2.1 1.5 1.4 4 3.1 4 5.6a3.3 3.3 0 0 1-3.3 3.4z';
   const fl=(x,y,s,o)=>`<path d="${P}" fill="${f}" transform="translate(${x} ${y}) scale(${s})"${o?` opacity="${o}"`:''}/>`;
   const core=(x,y,s)=>`<path d="${C}" fill="${inner}" opacity=".92" transform="translate(${x} ${y}) scale(${s})"/>`;
   const sp=(x,y,r,col)=>`<path d="M${x} ${y-r}l${r*.28} ${r*.72} ${r*.72} ${r*.28}-${r*.72} ${r*.28}-${r*.28} ${r*.72}-${r*.28}-${r*.72}-${r*.72}-${r*.28} ${r*.72}-${r*.28}z" fill="${col}"/>`;
   const dot=(x,y,r,col)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>`;
-  const side=fl(-1.44,8.2,.62,.85)+fl(10.56,8.2,.62,.85);
+  const T=(cx,s,o)=>fl(+(cx-12*s).toFixed(2),+(21.6-21.6*s).toFixed(2),s,o);
+  const body=n=>{const p=[];if(n>=5)p.push(T(3,.45,.7),T(21,.45,.7));p.push(T(6,.62,.85),T(18,.62,.85));if(n>=7)p.push(T(8.8,.8,.9),T(15.2,.8,.9));
+    return `<g clip-path="url(#${id}c)">${base}${p.join('')}${fl(0,0,1)}${core(0,0,1)}</g>`};
+  const wings=(a,b,d,L,sc)=>{let w=`<path d="M6.8 13.5C2.4 12.6.9 8.8 1.4 4.6c3.2.7 5.6 2.6 6.9 5.2zM17.2 13.5c4.4-.9 5.9-4.7 5.4-8.9-3.2.7-5.6 2.6-6.9 5.2z" fill="${a}"/><path d="M7.4 16.5C3.8 17 1.6 14.8 1 11.8c2.9-.1 5.1.9 6.4 3zM16.6 16.5c3.6.5 5.8-1.7 6.4-4.7-2.9-.1-5.1.9-6.4 3z" fill="${b}" opacity=".92"/>`;
+    if(L>=3)w+=`<path d="M8.4 19c-2.6 1.4-5.2.6-6.2-1.6 2.3-.5 4.6 0 6.2 1.6zM15.6 19c2.6 1.4 5.2.6 6.2-1.6-2.3-.5-4.6 0-6.2 1.6z" fill="${d}" opacity=".9"/>`;
+    return sc?`<g transform="translate(12 12.5) scale(${sc}) translate(-12 -12.5)">${w}</g>`:w};
+  const crown=(dy,gem)=>`<g transform="translate(0 ${dy})"><path d="M8.4 4.8L7.9 1.2l2.6 2L12 .3l1.5 2.9 2.6-2-.5 3.6z" fill="#FFD23F"/><path d="M8.4 4.8h7.2l.1-.9H8.3z" fill="#E8A800"/>${dot(12,2.9,.6,gem)}${dot(9.6,3.3,.4,'#7BD8FF')}${dot(14.4,3.3,.4,'#7BD8FF')}</g>`;
   let g='';
-  if(tier===0)g=fl(3.4,6.6,.7)+core(3.4,6.6,.7)+dot(18,6,.9,'#B9C2C3')+dot(20.5,10,.6,'#B9C2C3');       // dying ember
-  else if(tier===1)g=fl(2.4,4.4,.8)+core(2.4,4.4,.8)+sp(19.5,5,2.4,'#FFE08A');                              // spark
-  else if(tier===2)g=fl(0,0,1)+core(0,0,1);                                                                  // flame
-  else if(tier===3)g=side+fl(0,0,1)+core(0,0,1);                                                             // blaze: three tongues
-  else if(tier===4)g=side+fl(0,0,1)+core(0,0,1)+dot(4,5,.9,c[0])+dot(20,4,.9,c[0])+dot(12,.9,.7,c[2]);        // blue: embers above
-  else if(tier===5)g=side+fl(0,0,1)+core(0,0,1)+sp(3.6,5,2.6,c[0])+sp(20.4,5,2.6,c[0])+sp(20,15,1.6,c[2]);    // violet: sparkles
-  else if(tier===6)g=`<circle cx="12" cy="13" r="10.6" fill="none" stroke="${c[0]}" stroke-width=".9" opacity=".55" stroke-dasharray="2 2"/>`+side+fl(0,0,1)+`<path d="M12 20.4c-3.1-2.1-4.1-3.7-4.1-5.1a2.1 2.1 0 0 1 4.1-.7 2.1 2.1 0 0 1 4.1.7c0 1.4-1 3-4.1 5.1z" fill="${inner}"/>`; // rose: halo + heart core
-  else g=`<path d="M6.8 13.5C2.4 12.6.9 8.8 1.4 4.6c3.2.7 5.6 2.6 6.9 5.2zM17.2 13.5c4.4-.9 5.9-4.7 5.4-8.9-3.2.7-5.6 2.6-6.9 5.2z" fill="#FFE27A"/><path d="M7.4 16.5C3.8 17 1.6 14.8 1 11.8c2.9-.1 5.1.9 6.4 3zM16.6 16.5c3.6.5 5.8-1.7 6.4-4.7-2.9-.1-5.1.9-6.4 3z" fill="#FFC93C" opacity=".9"/>`+fl(0,0,1)+core(0,0,1)+sp(12,.4,2.2,'#FFE27A'); // legend: wings + star
-  return `<svg class="flsvg" viewBox="0 0 24 24" width="${px}" height="${px}" aria-hidden="true"><defs>${grad}</defs>${g}</svg>`;
+  if(tier===0)g=fl(3.4,6.6,.7)+core(3.4,6.6,.7)+dot(18,6,.9,'#B9C2C3')+dot(20.5,10,.6,'#B9C2C3');                  // dying ember
+  else if(tier===1)g=fl(2.4,4.4,.8)+core(2.4,4.4,.8)+sp(19.5,5,2.4,'#FFE08A');                                         // spark
+  else if(tier===2)g=fl(0,0,1)+core(0,0,1);                                                                             // flame
+  else if(tier===3)g=body(3);                                                                                           // blaze: three tongues
+  else if(tier===4)g=aura(10,.35)+body(3)+dot(4,5,.9,c[0])+dot(20,4,.9,c[0])+dot(12,.9,.7,c[2]);                         // blue: embers + faint glow
+  else if(tier===5)g=aura(11,.5)+body(3)+sp(3.6,5,2.6,c[0])+sp(20.4,5,2.6,c[0])+sp(20,15,1.6,c[2])+sp(4,16,1.4,c[2]);    // violet: glow + sparkles
+  else if(tier===6)g=aura(11.5,.55)+`<circle cx="12" cy="13" r="10.6" fill="none" stroke="${c[0]}" stroke-width=".9" opacity=".6" stroke-dasharray="2 2"/>`+`<g clip-path="url(#${id}c)">${base}${T(6,.62,.85)}${T(18,.62,.85)}${fl(0,0,1)}</g>`+`<path d="M12 20.4c-3.1-2.1-4.1-3.7-4.1-5.1a2.1 2.1 0 0 1 4.1-.7 2.1 2.1 0 0 1 4.1.7c0 1.4-1 3-4.1 5.1z" fill="${inner}"/>`+sp(3,4,1.6,c[0])+sp(21,4,1.6,c[0]); // rose: glow, halo, heart
+  else if(tier===7)g=aura(12,.6)+wings('#FFE27A','#FFC93C','',2)+body(3)+sp(12,.4,2.2,'#FFE27A');                         // legend: wings + star
+  else if(tier===8){let r='';for(let k=0;k<18;k++){const a=k/18*Math.PI*2,L=k%2?1.5:2.8,x1=12+Math.cos(a)*9.6,y1=12.5+Math.sin(a)*9.6,x2=12+Math.cos(a)*(9.6+L),y2=12.5+Math.sin(a)*(9.6+L);r+=`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${c[0]}" stroke-width="${k%2?.8:1.2}" stroke-linecap="round"/>`}
+    g=aura(14,.7)+r+body(5)+sp(3,3,2,c[0])+sp(21,3,2,c[0])+sp(22.5,16,1.4,c[2])+sp(1.5,16,1.4,c[2])}                        // solar: aura + sun rays + five tongues
+  else if(tier===9){let lv='';for(const sd of[-1,1])for(let k=0;k<6;k++){const a=(98+k*14)*Math.PI/180,A=sd<0?a:Math.PI-a,x=12+Math.cos(A)*11,y=12.5+Math.sin(A)*11,rot=(A*180/Math.PI)+90;lv+=`<ellipse cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" rx="2.5" ry="1.05" transform="rotate(${rot.toFixed(1)} ${x.toFixed(2)} ${y.toFixed(2)})" fill="${k%2?c[1]:c[0]}"/>`}
+    g=aura(14.5,.75)+lv+body(5)+sp(4,3,2.3,c[0])+sp(20,3,2.3,c[0])+sp(12,-.6,2,c[0])+dot(1.5,10,.8,c[0])+dot(22.5,10,.8,c[0])}       // emerald: aura + laurel wreath + sparkles
+  else if(tier===10)g=aura(15.5,.85)+wings('#FFE9A0','#FFC24A','#FF9A3C',3)+body(5)+crown(-3,'#FF4D6D')+sp(2.5,2,2.2,'#FFD23F')+sp(21.5,2,2.2,'#FFD23F')+dot(5,-1,.8,c[0])+dot(19,-1.5,.7,'#FFD23F')+dot(0,9,.8,c[0])+dot(24,8,.8,'#FFD23F')+dot(1,19,.7,'#FFD23F')+dot(23,20,.7,c[0]); // crimson: aura + wings + crown + embers
+  else if(tier===11){const orbit=[0,1,2,3,4,5].map(k=>{const a=k/6*Math.PI*2+.3;return sp((12+Math.cos(a)*13.2).toFixed(2),(12.5+Math.sin(a)*13.2).toFixed(2),k%2?1.5:2.1,k%2?'#FFFFFF':'#FFE9A0')}).join('');
+    g=aura(17,.95)+`<g class="orb"><circle cx="12" cy="12.5" r="13.2" fill="none" stroke="#FFE9A0" stroke-width=".55" stroke-dasharray="1.2 2.2" opacity=".9"/>${orbit}</g>`+`<circle cx="12" cy="12.5" r="11" fill="none" stroke="#FFE9A0" stroke-width=".8" opacity=".85"/>`+wings('#FFF6C9','#FFD66B','#FFB347',3,1.14)+body(7)+crown(-3,'#5BE0FF')} // eternal: everything
+  return `<svg class="flsvg${tier===11?' ft11':''}" viewBox="${big?'-3 -4.5 30 30':'0 0 24 24'}" width="${big?+(px*1.25).toFixed(1):px}" height="${big?+(px*1.25).toFixed(1):px}" aria-hidden="true"><defs>${grad}${gradU}${clip}${auraDef}</defs>${g}</svg>`;
 }
 const flameLit=()=>!!(S.settings.dev&&S.dev&&S.dev.streak!=null)||loggedDays().has(TD());
 function flames(n,max,cls){
@@ -2844,7 +2866,7 @@ function flames(n,max,cls){
 function flameCard(st,best){
   const lit=flameLit(),real=flameTier(st),t=st>0&&!lit?0:real,nx=FL_STEPS[real+1];
   const prev=FL_STEPS[real][0],pct=nx?Math.round((st-prev)/(nx[0]-prev)*100):100;
-  const ladder=FL_STEPS.slice(1).map((s,i)=>`<span class="lad${real>=i+1?' on':''}" title="${s[0]}+ days · ${s[1]}">${flameSvg(i+1,26)}<small>${s[0]}</small></span>`).join('');
+  const ladder=FL_STEPS.slice(1).map((s,i)=>`<span class="lad${real>=i+1?' on':''}" title="${s[0]}+ days · ${s[1]}">${flameSvg(i+1,26,real<i+1)}<small>${s[0]}</small></span>`).join('');
   return `<div class="card stack" style="gap:12px"><div class="flhead"><span class="fl t${t} big">${flameSvg(t,52)}</span><div class="stxt"><div class="mid num">${st} day${st===1?'':'s'}</div><div class="sub">${esc(FL_STEPS[real][1])} · Best: ${best}</div>
   ${st>0&&!lit?'<div class="sub warnt">⏳ Log something today to keep your flame lit.</div>':''}</div></div>
   <div><div class="bar"><i style="width:${pct}%"></i></div><div class="sub" style="margin-top:6px">${nx?`${nx[0]-st} more day${nx[0]-st===1?'':'s'} to the ${esc(nx[1])}.`:'Top flame reached!'}</div></div>
@@ -2927,7 +2949,7 @@ function vDev(){
   <div class="card stack"><div><b>Streak and level</b><div class="sub">Pretend values to preview flames and levels. Leave a box empty and tap Clear to go back to real values.</div></div>
   <div class="formgrid"><label class="f">Streak (days)<input class="in-t num" id="devStreak" inputmode="numeric" placeholder="${d.streak!=null?d.streak:'real: '+streakInfo().count}" value="${d.streak!=null?d.streak:''}"></label><label class="f">Records (for level)<input class="in-t num" id="devXp" inputmode="numeric" placeholder="${d.xp!=null?d.xp:'real'}" value="${d.xp!=null?d.xp:''}"></label></div>
   <div class="row2"><button class="btn sm" data-a="devFake">Apply</button>${btn('devFakeClear',null,'Clear')}</div>
-  <div class="chips wrap">${[0,1,3,7,14,30,60,100].map(v=>btn('devStreakSet',v,v+'d')).join('')}</div></div>
+  <div class="chips wrap">${[0,1,3,7,14,30,60,100,150,200,300,365].map(v=>btn('devStreakSet',v,v+'d')).join('')}</div></div>
   <div class="card stack"><div><b>Set an account balance</b></div>
   <div class="formgrid"><label class="f">Account<select class="in-t" id="devAcct">${S.accounts.map(a=>`<option value="${a.id}">${esc(a.icon+' '+a.name)}</option>`).join('')}</select></label><label class="f">Balance should be<input class="in-t num" id="devBal" inputmode="decimal" placeholder="0"></label></div>
   <button class="btn sm" data-a="devSetBal">Set balance</button></div>
