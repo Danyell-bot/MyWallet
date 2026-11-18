@@ -10,3 +10,7 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keepattributes *Annotation*, InnerClasses
+-keep class com.example.mywallet.data.** { *; }
+-keep class com.example.mywallet.GentleReceiver { *; }
+-keep class com.example.mywallet.MwWidget { *; }

@@ -557,7 +557,7 @@ button,.row,.chip,.cat,.btn{touch-action:manipulation;-webkit-tap-highlight-colo
 .calcline{display:block;text-align:right;min-height:18px}
 /* streak flame */
 .fl{display:inline-grid;place-items:center;line-height:0;filter:drop-shadow(0 0 5px var(--fg,rgba(255,120,30,.55)))}
-.fl.t0{filter:none;opacity:.9}.fl.t1{--fg:rgba(255,110,30,.5)}.fl.t2{--fg:rgba(240,40,28,.55)}.fl.t3{--fg:rgba(255,170,0,.6)}.fl.t4{--fg:rgba(40,130,255,.6)}.fl.t5{--fg:rgba(130,60,230,.6)}.fl.t6{--fg:rgba(220,30,150,.6)}.fl.t7{--fg:rgba(255,200,60,.7)}.fl.t8{--fg:rgba(255,190,0,.8)}.fl.t9{--fg:rgba(20,200,110,.7)}.fl.t10{--fg:rgba(230,40,70,.75)}.fl.t11{--fg:rgba(160,140,255,.9)}.fl.t8,.fl.t9,.fl.t10{filter:drop-shadow(0 0 3px var(--fg))}.fl.t11{filter:drop-shadow(0 0 3px var(--fg)) drop-shadow(0 0 7px rgba(255,150,230,.3))}
+.fl.t0{filter:none;opacity:.9}.fl.t1{--fg:rgba(255,110,30,.5)}.fl.t2{--fg:rgba(240,40,28,.55)}.fl.t3{--fg:rgba(255,170,0,.6)}.fl.t4{--fg:rgba(40,130,255,.6)}.fl.t5{--fg:rgba(130,60,230,.6)}.fl.t6{--fg:rgba(220,30,150,.6)}.fl.t7{--fg:rgba(255,200,60,.7)}.fl.t8{--fg:rgba(255,190,0,.8)}.fl.t9{--fg:rgba(20,200,110,.7)}.fl.t10{--fg:rgba(70,110,255,.8)}.fl.t11{--fg:rgba(230,40,70,.75)}.fl.t12{--fg:rgba(160,140,255,.9)}.fl.t8,.fl.t9,.fl.t10,.fl.t11{filter:drop-shadow(0 0 3px var(--fg))}.fl.t12{filter:drop-shadow(0 0 3px var(--fg)) drop-shadow(0 0 7px rgba(255,150,230,.3))}
 .streak .fl{margin-right:1px}
 .streak .fl .flsvg{display:block}
 @media (prefers-reduced-motion:no-preference){.fl:not(.t0){animation:flick 1.8s ease-in-out infinite;transform-origin:50% 90%}}
@@ -587,6 +587,28 @@ html.locked #imgv{display:none}
 .hdebts{display:flex;flex-direction:column;gap:8px}.hdebts .sech{margin:0}
 
 @keyframes orb{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:no-preference){.flsvg .orb{transform-origin:12px 12.5px;animation:orb 16s linear infinite}}
+
+/* every flame moves: flicker, sway, twinkle, pulse */
+@keyframes fmv{0%,100%{transform:scale(1,1) skewX(0)}30%{transform:scale(.97,1.04) skewX(1.5deg)}65%{transform:scale(1.02,.98) skewX(-1.5deg)}}
+@keyframes tgv{from{transform:scale(1,.9) rotate(-3deg)}to{transform:scale(1,1.08) rotate(3deg)}}
+@keyframes spkv{0%,100%{transform:scale(.55) rotate(0);opacity:.45}50%{transform:scale(1.1) rotate(45deg);opacity:1}}
+@keyframes embv{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-1.2px);opacity:1}}
+@keyframes aurv{0%,100%{transform:scale(.94);opacity:.8}50%{transform:scale(1.06);opacity:1}}
+@keyframes wgv{0%,100%{transform:scale(1)}50%{transform:scale(1.05,1.02)}}
+@keyframes lvsv{0%,100%{transform:scale(.98)}50%{transform:scale(1.035)}}
+@keyframes crwv{0%,100%{transform:translateY(0)}50%{transform:translateY(-.4px)}}
+@media (prefers-reduced-motion:no-preference){
+.flsvg .fm{transform-box:fill-box;transform-origin:50% 100%;animation:fmv 1.5s ease-in-out infinite}
+.flsvg .tg{transform-box:fill-box;transform-origin:50% 100%;animation:tgv 1.1s ease-in-out infinite alternate}
+.flsvg .spk{transform-box:fill-box;transform-origin:50% 50%;animation:spkv 1.8s ease-in-out infinite}
+.flsvg .emb{animation:embv 2.4s ease-in-out infinite}
+.flsvg .aur{transform-box:fill-box;transform-origin:50% 50%;animation:aurv 2.6s ease-in-out infinite}
+.flsvg .wg{transform-origin:12px 12.5px;animation:wgv 2.2s ease-in-out infinite}
+.flsvg .ray{transform-origin:12px 12.5px;animation:orb 24s linear infinite}
+.flsvg .lvs{transform-origin:12px 12.5px;animation:lvsv 3s ease-in-out infinite}
+.flsvg .crw{animation:crwv 2s ease-in-out infinite}
+.lad:not(.on) .flsvg *{animation:none!important}
+}
 
 </style>
 
@@ -2812,8 +2834,8 @@ function flames(n,max,cls){
    ===================================================================== */
 
 /* ---------- streak flame that changes with the streak (like TikTok) ---------- */
-const FL_STEPS=[[0,'Cold'],[1,'Spark'],[3,'Flame'],[7,'Blaze'],[14,'Blue flame'],[30,'Violet flame'],[60,'Rose flame'],[100,'Legend'],[150,'Solar flame'],[200,'Emerald flame'],[300,'Crimson crown'],[365,'Eternal flame']];
-const FL_COL=[['#B9C2C3','#8B9899','#DDE3E4'],['#FFAA3D','#FF6A1F','#FFE08A'],['#FF8A2A','#F0281C','#FFD36B'],['#FFD83F','#FF7A00','#FFF4B0'],['#7BD8FF','#1E6BFF','#DDF4FF'],['#CE92FF','#6A2BD9','#F0DEFF'],['#FF92DC','#C2188F','#FFDDF3'],['rainbow'],['#FFF3A0','#FFA800','#FFFFFF'],['#8CFFC0','#0A9F5B','#E3FFF0'],['#FF6B6B','#8E0C2B','#FFD9D9'],['diamond']];
+const FL_STEPS=[[0,'Cold'],[1,'Spark'],[3,'Flame'],[7,'Blaze'],[14,'Blue flame'],[30,'Violet flame'],[60,'Rose flame'],[100,'Legend'],[150,'Solar flame'],[200,'Emerald flame'],[250,'Sapphire flame'],[300,'Crimson crown'],[365,'Eternal flame']];
+const FL_COL=[['#B9C2C3','#8B9899','#DDE3E4'],['#FFAA3D','#FF6A1F','#FFE08A'],['#FF8A2A','#F0281C','#FFD36B'],['#FFD83F','#FF7A00','#FFF4B0'],['#7BD8FF','#1E6BFF','#DDF4FF'],['#CE92FF','#6A2BD9','#F0DEFF'],['#FF92DC','#C2188F','#FFDDF3'],['rainbow'],['#FFF3A0','#FFA800','#FFFFFF'],['#8CFFC0','#0A9F5B','#E3FFF0'],['#8FB4FF','#2742D6','#E6EEFF'],['#FF6B6B','#8E0C2B','#FFD9D9'],['diamond']];
 const flameTier=n=>{let t=0;FL_STEPS.forEach((s,i)=>{if(i>0&&n>=s[0])t=i});return t};
 function flameSvg(tier,px,locked){
   const sk=locked?'':FL_COL[tier][0],rb=sk==='rainbow'||sk==='diamond',c=locked?['#C3CBCC','#9AA6A7','#E4E9EA']:FL_COL[tier],id='flg'+tier+'_'+px+(locked?'x':''),big=tier>=8;
@@ -2824,39 +2846,41 @@ function flameSvg(tier,px,locked){
   const clip=`<clipPath id="${id}c"><path d="M-2 -2H26V16.5C26 19.8 19 21.6 12 21.6S-2 19.8-2 16.5Z"/></clipPath>`;
   const ac=locked?c[0]:sk==='diamond'?'#B79BFF':sk==='rainbow'?'#FFC85A':c[0];
   const auraDef=`<radialGradient id="${id}a"><stop offset="0" stop-color="${ac}" stop-opacity=".6"/><stop offset="1" stop-color="${ac}" stop-opacity="0"/></radialGradient>`;
-  const aura=(r,o)=>`<circle cx="12" cy="12.5" r="${r}" fill="url(#${id}a)" opacity="${o}"/>`;
+  const aura=(r,o)=>`<circle class="aur" cx="12" cy="12.5" r="${r}" fill="url(#${id}a)" opacity="${o}"/>`;
   const base=`<path d="M3.4 17.4C3.4 14.6 7.2 13.4 12 13.4S20.6 14.6 20.6 17.4C20.6 20.2 17 21.6 12 21.6S3.4 20.2 3.4 17.4Z" fill="url(#${id}u)"/>`;
   const inner=sk==='diamond'?'#FFFFFF':rb?'#FFF6D8':c[2],f=`url(#${id})`;
   const P='M12.4 1.6c.6 3.4-1.1 4.9-2.7 6.9C8 10.6 6.2 12.8 6.2 15.7a5.9 5.9 0 0 0 5.8 5.9 5.9 5.9 0 0 0 5.8-6.1c0-2.5-1.2-4.4-2.3-5.7-.3 1.4-1 2.2-1.9 2.6.8-3.4-.1-7.2-1.2-10.8z';
   const C='M12 21.6a3.3 3.3 0 0 1-3.3-3.4c0-1.6.9-2.5 1.7-3.5.4-.6.8-1.2.9-2.1 1.5 1.4 4 3.1 4 5.6a3.3 3.3 0 0 1-3.3 3.4z';
   const fl=(x,y,s,o)=>`<path d="${P}" fill="${f}" transform="translate(${x} ${y}) scale(${s})"${o?` opacity="${o}"`:''}/>`;
   const core=(x,y,s)=>`<path d="${C}" fill="${inner}" opacity=".92" transform="translate(${x} ${y}) scale(${s})"/>`;
-  const sp=(x,y,r,col)=>`<path d="M${x} ${y-r}l${r*.28} ${r*.72} ${r*.72} ${r*.28}-${r*.72} ${r*.28}-${r*.28} ${r*.72}-${r*.28}-${r*.72}-${r*.72}-${r*.28} ${r*.72}-${r*.28}z" fill="${col}"/>`;
-  const dot=(x,y,r,col)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${col}"/>`;
-  const T=(cx,s,o)=>fl(+(cx-12*s).toFixed(2),+(21.6-21.6*s).toFixed(2),s,o);
+  const sp=(x,y,r,col)=>`<path class="spk" style="animation-delay:${((+x*7+ +y*3)%20/10).toFixed(1)}s" d="M${x} ${y-r}l${r*.28} ${r*.72} ${r*.72} ${r*.28}-${r*.72} ${r*.28}-${r*.28} ${r*.72}-${r*.28}-${r*.72}-${r*.72}-${r*.28} ${r*.72}-${r*.28}z" fill="${col}"/>`;
+  const dot=(x,y,r,col)=>`<circle class="emb" style="animation-delay:${((+x*5+ +y*2)%24/10).toFixed(1)}s" cx="${x}" cy="${y}" r="${r}" fill="${col}"/>`;
+  const T=(cx,s,o)=>`<g class="tg" style="animation-delay:${((cx*3)%10/10).toFixed(1)}s">${fl(+(cx-12*s).toFixed(2),+(21.6-21.6*s).toFixed(2),s,o)}</g>`;
   const body=n=>{const p=[];if(n>=5)p.push(T(3,.45,.7),T(21,.45,.7));p.push(T(6,.62,.85),T(18,.62,.85));if(n>=7)p.push(T(8.8,.8,.9),T(15.2,.8,.9));
-    return `<g clip-path="url(#${id}c)">${base}${p.join('')}${fl(0,0,1)}${core(0,0,1)}</g>`};
+    return `<g clip-path="url(#${id}c)">${base}${p.join('')}<g class="fm">${fl(0,0,1)}${core(0,0,1)}</g></g>`};
   const wings=(a,b,d,L,sc)=>{let w=`<path d="M6.8 13.5C2.4 12.6.9 8.8 1.4 4.6c3.2.7 5.6 2.6 6.9 5.2zM17.2 13.5c4.4-.9 5.9-4.7 5.4-8.9-3.2.7-5.6 2.6-6.9 5.2z" fill="${a}"/><path d="M7.4 16.5C3.8 17 1.6 14.8 1 11.8c2.9-.1 5.1.9 6.4 3zM16.6 16.5c3.6.5 5.8-1.7 6.4-4.7-2.9-.1-5.1.9-6.4 3z" fill="${b}" opacity=".92"/>`;
     if(L>=3)w+=`<path d="M8.4 19c-2.6 1.4-5.2.6-6.2-1.6 2.3-.5 4.6 0 6.2 1.6zM15.6 19c2.6 1.4 5.2.6 6.2-1.6-2.3-.5-4.6 0-6.2 1.6z" fill="${d}" opacity=".9"/>`;
+    w=`<g class="wg">${w}</g>`;
     return sc?`<g transform="translate(12 12.5) scale(${sc}) translate(-12 -12.5)">${w}</g>`:w};
-  const crown=(dy,gem)=>`<g transform="translate(0 ${dy})"><path d="M8.4 4.8L7.9 1.2l2.6 2L12 .3l1.5 2.9 2.6-2-.5 3.6z" fill="#FFD23F"/><path d="M8.4 4.8h7.2l.1-.9H8.3z" fill="#E8A800"/>${dot(12,2.9,.6,gem)}${dot(9.6,3.3,.4,'#7BD8FF')}${dot(14.4,3.3,.4,'#7BD8FF')}</g>`;
+  const crown=(dy,gem)=>`<g transform="translate(0 ${dy})"><g class="crw"><path d="M8.4 4.8L7.9 1.2l2.6 2L12 .3l1.5 2.9 2.6-2-.5 3.6z" fill="#FFD23F"/><path d="M8.4 4.8h7.2l.1-.9H8.3z" fill="#E8A800"/>${dot(12,2.9,.6,gem)}${dot(9.6,3.3,.4,'#7BD8FF')}${dot(14.4,3.3,.4,'#7BD8FF')}</g></g>`;
   let g='';
   if(tier===0)g=fl(3.4,6.6,.7)+core(3.4,6.6,.7)+dot(18,6,.9,'#B9C2C3')+dot(20.5,10,.6,'#B9C2C3');                  // dying ember
-  else if(tier===1)g=fl(2.4,4.4,.8)+core(2.4,4.4,.8)+sp(19.5,5,2.4,'#FFE08A');                                         // spark
-  else if(tier===2)g=fl(0,0,1)+core(0,0,1);                                                                             // flame
+  else if(tier===1)g='<g class="fm">'+fl(2.4,4.4,.8)+core(2.4,4.4,.8)+'</g>'+sp(19.5,5,2.4,'#FFE08A');                                         // spark
+  else if(tier===2)g='<g class="fm">'+fl(0,0,1)+core(0,0,1)+'</g>';                                                                             // flame
   else if(tier===3)g=body(3);                                                                                           // blaze: three tongues
   else if(tier===4)g=aura(10,.35)+body(3)+dot(4,5,.9,c[0])+dot(20,4,.9,c[0])+dot(12,.9,.7,c[2]);                         // blue: embers + faint glow
   else if(tier===5)g=aura(11,.5)+body(3)+sp(3.6,5,2.6,c[0])+sp(20.4,5,2.6,c[0])+sp(20,15,1.6,c[2])+sp(4,16,1.4,c[2]);    // violet: glow + sparkles
-  else if(tier===6)g=aura(11.5,.55)+`<circle cx="12" cy="13" r="10.6" fill="none" stroke="${c[0]}" stroke-width=".9" opacity=".6" stroke-dasharray="2 2"/>`+`<g clip-path="url(#${id}c)">${base}${T(6,.62,.85)}${T(18,.62,.85)}${fl(0,0,1)}</g>`+`<path d="M12 20.4c-3.1-2.1-4.1-3.7-4.1-5.1a2.1 2.1 0 0 1 4.1-.7 2.1 2.1 0 0 1 4.1.7c0 1.4-1 3-4.1 5.1z" fill="${inner}"/>`+sp(3,4,1.6,c[0])+sp(21,4,1.6,c[0]); // rose: glow, halo, heart
+  else if(tier===6)g=aura(11.5,.55)+`<circle class="ray" cx="12" cy="13" r="10.6" fill="none" stroke="${c[0]}" stroke-width=".9" opacity=".6" stroke-dasharray="2 2"/>`+`<g clip-path="url(#${id}c)">${base}${T(6,.62,.85)}${T(18,.62,.85)}${fl(0,0,1)}</g>`+`<path d="M12 20.4c-3.1-2.1-4.1-3.7-4.1-5.1a2.1 2.1 0 0 1 4.1-.7 2.1 2.1 0 0 1 4.1.7c0 1.4-1 3-4.1 5.1z" fill="${inner}"/>`+sp(3,4,1.6,c[0])+sp(21,4,1.6,c[0]); // rose: glow, halo, heart
   else if(tier===7)g=aura(12,.6)+wings('#FFE27A','#FFC93C','',2)+body(3)+sp(12,.4,2.2,'#FFE27A');                         // legend: wings + star
   else if(tier===8){let r='';for(let k=0;k<18;k++){const a=k/18*Math.PI*2,L=k%2?1.5:2.8,x1=12+Math.cos(a)*9.6,y1=12.5+Math.sin(a)*9.6,x2=12+Math.cos(a)*(9.6+L),y2=12.5+Math.sin(a)*(9.6+L);r+=`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${c[0]}" stroke-width="${k%2?.8:1.2}" stroke-linecap="round"/>`}
-    g=aura(14,.7)+r+body(5)+sp(3,3,2,c[0])+sp(21,3,2,c[0])+sp(22.5,16,1.4,c[2])+sp(1.5,16,1.4,c[2])}                        // solar: aura + sun rays + five tongues
+    g=aura(14,.7)+`<g class="ray">${r}</g>`+body(5)+sp(3,3,2,c[0])+sp(21,3,2,c[0])+sp(22.5,16,1.4,c[2])+sp(1.5,16,1.4,c[2])}                        // solar: aura + sun rays + five tongues
   else if(tier===9){let lv='';for(const sd of[-1,1])for(let k=0;k<6;k++){const a=(98+k*14)*Math.PI/180,A=sd<0?a:Math.PI-a,x=12+Math.cos(A)*11,y=12.5+Math.sin(A)*11,rot=(A*180/Math.PI)+90;lv+=`<ellipse cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" rx="2.5" ry="1.05" transform="rotate(${rot.toFixed(1)} ${x.toFixed(2)} ${y.toFixed(2)})" fill="${k%2?c[1]:c[0]}"/>`}
-    g=aura(14.5,.75)+lv+body(5)+sp(4,3,2.3,c[0])+sp(20,3,2.3,c[0])+sp(12,-.6,2,c[0])+dot(1.5,10,.8,c[0])+dot(22.5,10,.8,c[0])}       // emerald: aura + laurel wreath + sparkles
-  else if(tier===10)g=aura(15.5,.85)+wings('#FFE9A0','#FFC24A','#FF9A3C',3)+body(5)+crown(-3,'#FF4D6D')+sp(2.5,2,2.2,'#FFD23F')+sp(21.5,2,2.2,'#FFD23F')+dot(5,-1,.8,c[0])+dot(19,-1.5,.7,'#FFD23F')+dot(0,9,.8,c[0])+dot(24,8,.8,'#FFD23F')+dot(1,19,.7,'#FFD23F')+dot(23,20,.7,c[0]); // crimson: aura + wings + crown + embers
-  else if(tier===11){const orbit=[0,1,2,3,4,5].map(k=>{const a=k/6*Math.PI*2+.3;return sp((12+Math.cos(a)*13.2).toFixed(2),(12.5+Math.sin(a)*13.2).toFixed(2),k%2?1.5:2.1,k%2?'#FFFFFF':'#FFE9A0')}).join('');
+    g=aura(14.5,.75)+`<g class="lvs">${lv}</g>`+body(5)+sp(4,3,2.3,c[0])+sp(20,3,2.3,c[0])+sp(12,-.6,2,c[0])+dot(1.5,10,.8,c[0])+dot(22.5,10,.8,c[0])}       // emerald: aura + laurel wreath + sparkles
+  else if(tier===10)g=aura(14.8,.8)+wings('#DCE8FF','#8FB4FF','',2)+body(5)+'<g transform="translate(0 -1.6)"><g class="crw"><path d="M12 -1.4l2 2.2L12 4.2 10 .8z" fill="#E6EEFF" stroke="#8FB4FF" stroke-width=".35"/><path d="M12 -1.4l2 2.2h-4z" fill="#FFFFFF" opacity=".8"/></g></g>'+sp(3.2,3,2.3,c[0])+sp(20.8,3,2.3,c[0])+sp(1.8,14,1.5,c[2])+sp(22.2,14,1.5,c[2])+dot(0.8,9,.8,c[0])+dot(23.2,9,.8,c[0]); // sapphire: aura + wings + gem
+  else if(tier===11)g=aura(15.5,.85)+wings('#FFE9A0','#FFC24A','#FF9A3C',3)+body(5)+crown(-3,'#FF4D6D')+sp(2.5,2,2.2,'#FFD23F')+sp(21.5,2,2.2,'#FFD23F')+dot(5,-1,.8,c[0])+dot(19,-1.5,.7,'#FFD23F')+dot(0,9,.8,c[0])+dot(24,8,.8,'#FFD23F')+dot(1,19,.7,'#FFD23F')+dot(23,20,.7,c[0]); // crimson: aura + wings + crown + embers
+  else if(tier===12){const orbit=[0,1,2,3,4,5].map(k=>{const a=k/6*Math.PI*2+.3;return sp((12+Math.cos(a)*13.2).toFixed(2),(12.5+Math.sin(a)*13.2).toFixed(2),k%2?1.5:2.1,k%2?'#FFFFFF':'#FFE9A0')}).join('');
     g=aura(17,.95)+`<g class="orb"><circle cx="12" cy="12.5" r="13.2" fill="none" stroke="#FFE9A0" stroke-width=".55" stroke-dasharray="1.2 2.2" opacity=".9"/>${orbit}</g>`+`<circle cx="12" cy="12.5" r="11" fill="none" stroke="#FFE9A0" stroke-width=".8" opacity=".85"/>`+wings('#FFF6C9','#FFD66B','#FFB347',3,1.14)+body(7)+crown(-3,'#5BE0FF')} // eternal: everything
-  return `<svg class="flsvg${tier===11?' ft11':''}" viewBox="${big?'-3 -4.5 30 30':'0 0 24 24'}" width="${big?+(px*1.25).toFixed(1):px}" height="${big?+(px*1.25).toFixed(1):px}" aria-hidden="true"><defs>${grad}${gradU}${clip}${auraDef}</defs>${g}</svg>`;
+  return `<svg class="flsvg${tier===12?' ft12':''}" viewBox="${big?'-3 -4.5 30 30':'0 0 24 24'}" width="${big?+(px*1.25).toFixed(1):px}" height="${big?+(px*1.25).toFixed(1):px}" aria-hidden="true"><defs>${grad}${gradU}${clip}${auraDef}</defs>${g}</svg>`;
 }
 const flameLit=()=>!!(S.settings.dev&&S.dev&&S.dev.streak!=null)||loggedDays().has(TD());
 function flames(n,max,cls){
@@ -2949,7 +2973,7 @@ function vDev(){
   <div class="card stack"><div><b>Streak and level</b><div class="sub">Pretend values to preview flames and levels. Leave a box empty and tap Clear to go back to real values.</div></div>
   <div class="formgrid"><label class="f">Streak (days)<input class="in-t num" id="devStreak" inputmode="numeric" placeholder="${d.streak!=null?d.streak:'real: '+streakInfo().count}" value="${d.streak!=null?d.streak:''}"></label><label class="f">Records (for level)<input class="in-t num" id="devXp" inputmode="numeric" placeholder="${d.xp!=null?d.xp:'real'}" value="${d.xp!=null?d.xp:''}"></label></div>
   <div class="row2"><button class="btn sm" data-a="devFake">Apply</button>${btn('devFakeClear',null,'Clear')}</div>
-  <div class="chips wrap">${[0,1,3,7,14,30,60,100,150,200,300,365].map(v=>btn('devStreakSet',v,v+'d')).join('')}</div></div>
+  <div class="chips wrap">${[0,1,3,7,14,30,60,100,150,200,250,300,365].map(v=>btn('devStreakSet',v,v+'d')).join('')}</div></div>
   <div class="card stack"><div><b>Set an account balance</b></div>
   <div class="formgrid"><label class="f">Account<select class="in-t" id="devAcct">${S.accounts.map(a=>`<option value="${a.id}">${esc(a.icon+' '+a.name)}</option>`).join('')}</select></label><label class="f">Balance should be<input class="in-t num" id="devBal" inputmode="decimal" placeholder="0"></label></div>
   <button class="btn sm" data-a="devSetBal">Set balance</button></div>

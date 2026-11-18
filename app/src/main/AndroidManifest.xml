@@ -15,12 +15,13 @@
     </queries>
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/MyWallet"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyWallet">
+        android:theme="@style/Theme.MyWallet"
+        android:usesCleartextTraffic="false">
 
         <activity
             android:name=".MainActivity"
@@ -30,11 +31,18 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|smallestScreenSize">
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity>
+
+        <activity
+            android:name=".NativeActivity"
+            android:exported="true"
+            android:label="MyWallet"
+            android:theme="@style/Theme.MyWallet">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
 
         <provider
@@ -45,13 +53,13 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
-        <receiver android:name=".ReminderReceiver" android:exported="false">
+        <receiver android:name=".GentleReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".IponWidget" android:exported="true" android:label="MyWallet">
+        <receiver android:name=".MwWidget" android:exported="true" android:label="MyWallet">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

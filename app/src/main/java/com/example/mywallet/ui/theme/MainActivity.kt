@@ -506,7 +506,7 @@ class MainActivity : FragmentActivity() {
                 .putString("w_safe", o.optString("safe"))
                 .putBoolean("w_hide", o.optBoolean("hide"))
                 .apply()
-            IponWidget.refresh(this@MainActivity)
+            MwWidget.refresh(this@MainActivity)
         }
 
         @JavascriptInterface
