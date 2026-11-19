@@ -49,9 +49,12 @@ import com.example.mywallet.data.Fav
 import com.example.mywallet.data.Goal
 import com.example.mywallet.data.Store
 import com.example.mywallet.data.acc
+import com.example.mywallet.data.paidSoFar
+import com.example.mywallet.data.left
 import com.example.mywallet.data.balBase
 import com.example.mywallet.data.balanceNow
 import com.example.mywallet.data.bankCalc
+import com.example.mywallet.data.BillDue
 import com.example.mywallet.data.billDue
 import com.example.mywallet.data.cat
 import com.example.mywallet.data.dn
@@ -75,6 +78,8 @@ private fun AppState.goalSaved(g: Goal): Double {
     return if (a != null) maxOf(0.0, balBase(a)) else g.contribs.sumOf { it.amount }
 }
 private fun num(t: String): Double = t.toDoubleOrNull() ?: 0.0
+
+private fun fmtNum(v: Double): String = if (v == Math.floor(v)) v.toLong().toString() else String.format(java.util.Locale.US, "%.2f", v)
 private fun fmt(d: Double): String = java.math.BigDecimal.valueOf(d).stripTrailingZeros().toPlainString()
 
 /* ============================ BILLS ============================ */
@@ -88,30 +93,35 @@ fun BillsScreen(s: AppState, store: Store, onClose: () -> Unit) {
     val list = s.bills.map { it to billDue(it, t) }.sortedBy { it.second.dn }
     ToolShell("Bills", onClose, "New bill", { adding = true }) {
         if (list.isEmpty()) EmptyCard("receipt", "No bills yet.\nAdd rent, load or subscriptions and they show up on your Plan page.")
-        list.forEach { (b, due) ->
-            val late = due.dn < t
-            ItemRow(
-                s.cat(b.cat)?.icon ?: "🧾", b.name, dueText(due.dn) + " · every " + ordinal(b.day), if (late) MW.Rose else MW.Dim, MW.Amber,
-                trailing = {
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(s.money(b.amount), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
-                        Spacer(Modifier.height(6.dp))
-                        Box(Modifier.clip(RoundedCornerShape(14.dp)).background(MW.Accent.copy(alpha = 0.25f)).border(1.dp, MW.Accent.copy(alpha = 0.6f), RoundedCornerShape(14.dp)).clickable {
-                            if (s.acc(b.acct) == null) toast(ctx, "Pick a pay-from account first")
-                            else {
-                                store.payBill(b.id, due.key, buildJsonObject {
-                                    put("id", store.newId()); put("ts", System.currentTimeMillis()); put("type", "expense"); put("acct", b.acct); put("to", "")
-                                    put("cat", b.cat); put("amount", b.amount); put("date", todayStr()); put("note", b.name)
-                                })
-                                toast(ctx, b.name + " paid")
-                            }
-                        }.padding(horizontal = 12.dp, vertical = 5.dp)) { Text("Pay", style = TextStyle(color = MW.Mint, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)) }
-                    }
-                },
-            ) { form = b }
-        }
+        list.forEach { (b, due) -> BillItem(s, store, b, due, t) { form = b } }
     }
     if (adding || form != null) BillForm(s, store, form) { adding = false; form = null }
+}
+
+@Composable
+private fun BillItem(s: AppState, store: Store, b: Bill, due: BillDue, t: Long, onOpen: () -> Unit) {
+    val ctx = LocalContext.current
+    val late = due.dn < t
+    ItemRow(
+        s.cat(b.cat)?.icon ?: "🧾", b.name, dueText(due.dn) + " · every " + ordinal(b.day), if (late) MW.Rose else MW.Dim, MW.Amber,
+        trailing = {
+            Column(horizontalAlignment = Alignment.End) {
+                Text(s.money(b.amount), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
+                Spacer(Modifier.height(6.dp))
+                Box(Modifier.clip(RoundedCornerShape(14.dp)).background(MW.Accent.copy(alpha = 0.25f)).border(1.dp, MW.Accent.copy(alpha = 0.6f), RoundedCornerShape(14.dp)).clickable {
+                    if (s.acc(b.acct) == null) toast(ctx, "Pick a pay-from account first")
+                    else {
+                        store.payBill(b.id, due.key, buildJsonObject {
+                            put("id", store.newId()); put("ts", System.currentTimeMillis()); put("type", "expense"); put("acct", b.acct); put("to", "")
+                            put("cat", b.cat); put("amount", b.amount); put("date", todayStr()); put("note", b.name)
+                        })
+                        toast(ctx, b.name + " paid")
+                    }
+                }.padding(horizontal = 12.dp, vertical = 5.dp)) { Text("Pay", style = TextStyle(color = MW.Mint, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)) }
+            }
+        },
+        onClick = onOpen,
+    )
 }
 
 @Composable
@@ -163,11 +173,7 @@ fun DebtsScreen(s: AppState, store: Store, onClose: () -> Unit) {
     ToolShell("Debts", onClose, "New debt", { adding = true }) {
         GhostButton("Split a bill with friends", Modifier.fillMaxWidth(), icon = "users") { split = true }
         if (s.debts.isEmpty()) EmptyCard("swap", "No debts yet.\nTrack money you lent or borrowed. Balances change only when you mark it paid.")
-        open.forEach { d ->
-            val late = d.due.isNotEmpty() && dn(d.due) < t
-            ItemRow(if (d.theyOweMe) "⬇" else "⬆", d.who, (if (d.theyOweMe) "Owes you" else "You owe") + (if (d.due.isNotEmpty()) " · " + dueText(dn(d.due)) else ""), if (late) MW.Rose else MW.Dim, if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81),
-                trailing = { Text(s.money(d.amount), style = TextStyle(color = if (d.theyOweMe) MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")) }) { view = d }
-        }
+        open.forEach { d -> DebtItem(s, d, t) { view = d } }
         if (done.isNotEmpty()) {
             Lbl("Settled", Modifier.padding(top = 10.dp))
             done.forEach { d -> ItemRow("\u2696", d.who, if (d.theyOweMe) "Paid you back" else "You paid back", MW.Faint, Color.White, trailing = { Text(s.money(d.amount), style = TextStyle(color = MW.Dim, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }) { view = d } }
@@ -175,7 +181,53 @@ fun DebtsScreen(s: AppState, store: Store, onClose: () -> Unit) {
     }
     if (adding) DebtForm(store) { adding = false }
     if (split) SplitForm(s, store) { split = false }
-    view?.let { d -> DebtView(s, store, d) { view = null } }
+    view?.let { v -> DebtView(s, store, s.debts.firstOrNull { it.id == v.id } ?: v) { view = null } }
+}
+
+@Composable
+private fun DebtItem(s: AppState, d: Debt, t: Long, onOpen: () -> Unit) {
+    val late = d.due.isNotEmpty() && dn(d.due) < t
+    ItemRow(if (d.theyOweMe) "⬇" else "⬆", d.who, (if (d.theyOweMe) "Owes you" else "You owe") + (if (d.pays.isNotEmpty()) " · paid " + s.money(d.paidSoFar()) + " of " + s.money(d.amount) else "") + (if (d.due.isNotEmpty()) " · " + dueText(dn(d.due)) else ""), if (late) MW.Rose else MW.Dim, if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81),
+        trailing = { Text(s.money(d.left()), style = TextStyle(color = if (d.theyOweMe) MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")) }, onClick = onOpen)
+}
+
+/* ============================ NEEDS YOU (bills + debts together) ============================ */
+
+@Composable
+fun NeedsScreen(s: AppState, store: Store, onClose: () -> Unit) {
+    var billForm by remember { mutableStateOf<Bill?>(null) }
+    var debtView by remember { mutableStateOf<Debt?>(null) }
+    var choose by remember { mutableStateOf(false) }
+    var newBill by remember { mutableStateOf(false) }
+    var newDebt by remember { mutableStateOf(false) }
+    var split by remember { mutableStateOf(false) }
+    val t = todayDn()
+    class NRow(val dn: Long, val bill: Pair<Bill, BillDue>?, val debt: Debt?)
+    val rows = ArrayList<NRow>()
+    s.bills.forEach { val d = billDue(it, t); rows.add(NRow(d.dn, it to d, null)) }
+    s.debts.filter { !it.paid }.forEach { rows.add(NRow(if (it.due.isEmpty()) Long.MAX_VALUE else dn(it.due), null, it)) }
+    rows.sortBy { it.dn }
+    val done = s.debts.filter { it.paid }
+    ToolShell("Needs you", onClose, "Add", { choose = true }) {
+        if (rows.isEmpty()) EmptyCard("receipt", "Nothing here yet.\nAdd a bill or a debt with the Add button.")
+        rows.forEach { r ->
+            if (r.bill != null) BillItem(s, store, r.bill.first, r.bill.second, t) { billForm = r.bill.first }
+            else if (r.debt != null) DebtItem(s, r.debt, t) { debtView = r.debt }
+        }
+        if (done.isNotEmpty()) {
+            Lbl("Settled", Modifier.padding(top = 10.dp))
+            done.forEach { d -> ItemRow("\u2696", d.who, if (d.theyOweMe) "Paid you back" else "You paid back", MW.Faint, Color.White, trailing = { Text(s.money(d.amount), style = TextStyle(color = MW.Dim, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }) { debtView = d } }
+        }
+    }
+    if (choose) FormPanel("Add", { choose = false }) {
+        BigButton("New bill") { choose = false; newBill = true }
+        GhostButton("New debt", Modifier.fillMaxWidth(), icon = "swap") { choose = false; newDebt = true }
+        GhostButton("Split a bill with friends", Modifier.fillMaxWidth(), icon = "users") { choose = false; split = true }
+    }
+    if (newBill || billForm != null) BillForm(s, store, billForm) { newBill = false; billForm = null }
+    if (newDebt) DebtForm(store) { newDebt = false }
+    if (split) SplitForm(s, store) { split = false }
+    debtView?.let { v -> DebtView(s, store, s.debts.firstOrNull { it.id == v.id } ?: v) { debtView = null } }
 }
 
 @Composable
@@ -211,25 +263,50 @@ private fun DebtView(s: AppState, store: Store, d: Debt, onClose: () -> Unit) {
     val ctx = LocalContext.current
     var acct by remember { mutableStateOf(s.activeAccts().firstOrNull()?.id ?: "") }
     var del by remember { mutableStateOf(false) }
+    val left = d.left()
+    var pay by remember { mutableStateOf(if (left > 0) fmtNum(left) else "") }
     FormPanel(d.who, onClose) {
         Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(22.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Lbl(if (d.theyOweMe) "They owe you" else "You owe them")
-            Text(s.money(d.amount), style = numStyle(34f, if (d.theyOweMe) MW.Mint else Color.White))
+            Text(s.money(if (d.paid) d.amount else left), style = numStyle(34f, if (d.theyOweMe) MW.Mint else Color.White))
+            if (!d.paid && d.pays.isNotEmpty()) {
+                Text("of " + s.money(d.amount) + " · paid " + s.money(d.paidSoFar()), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+                Spacer(Modifier.height(4.dp))
+                Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(6.dp)).background(Color.White.copy(alpha = 0.14f))) {
+                    Box(Modifier.fillMaxWidth((d.paidSoFar() / d.amount).toFloat().coerceIn(0.01f, 1f)).height(6.dp).clip(RoundedCornerShape(6.dp)).background(MW.Accent))
+                }
+            }
             if (d.due.isNotEmpty()) Text("Due " + fmtDate(d.due), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
             if (d.note.isNotBlank()) Text(d.note, style = TextStyle(color = MW.Dim, fontSize = 13.sp))
         }
+        if (d.pays.isNotEmpty()) {
+            Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(22.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Lbl("Payments")
+                d.pays.forEach { p ->
+                    Row(Modifier.fillMaxWidth()) {
+                        Text(fmtDate(p.date), Modifier.weight(1f), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+                        Text(s.money(p.amount), style = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+                    }
+                }
+            }
+        }
         if (d.paid) Text("This debt is settled.", style = TextStyle(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
         else {
+            FText(if (d.theyOweMe) "They paid you" else "You paid", pay, { pay = it }, "0", decimal = true)
             FChips(if (d.theyOweMe) "Money goes into" else "Money comes out of", s.activeAccts().map { opt(it.id, it.name, it.icon) }, acct, { acct = it })
-            BigButton("Mark as paid", icon = "check") {
+            Text("Pay part of it, or all of it. What is still owed stays on the list.", style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
+            BigButton("Record payment", icon = "check") {
+                val a = num(pay)
                 if (s.acc(acct) == null) toast(ctx, "Choose an account")
+                else if (a <= 0) toast(ctx, "Enter how much was paid")
                 else {
-                    store.settleDebt(d.id, buildJsonObject {
+                    val amt = minOf(a, left)
+                    store.payDebt(d.id, amt, todayStr(), buildJsonObject {
                         put("id", store.newId()); put("ts", System.currentTimeMillis()); put("type", if (d.theyOweMe) "income" else "expense"); put("acct", acct); put("to", "")
-                        put("cat", if (d.theyOweMe) "i_Other" else "e_Other"); put("amount", d.amount); put("date", todayStr())
+                        put("cat", if (d.theyOweMe) "i_Other" else "e_Other"); put("amount", amt); put("date", todayStr())
                         put("note", if (d.theyOweMe) d.who + " paid back" else "Paid back " + d.who)
                     })
-                    toast(ctx, "Marked as paid"); onClose()
+                    toast(ctx, if (amt >= left - 0.005) "Debt settled" else "Payment saved"); onClose()
                 }
             }
         }

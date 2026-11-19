@@ -113,6 +113,8 @@ object LI : KSerializer<Int> {
     @Serializable(with = LD::class) val amount: Double = 0.0,
 )
 
+@Serializable data class DebtPay(val date: String = "", @Serializable(with = LD::class) val amount: Double = 0.0)
+
 @Serializable data class Debt(
     val id: String = "",
     val who: String = "",
@@ -122,6 +124,7 @@ object LI : KSerializer<Int> {
     val due: String = "",
     val note: String = "",
     val paid: Boolean = false,
+    val pays: List<DebtPay> = emptyList(),
 )
 
 @Serializable data class Bill(

@@ -80,6 +80,8 @@ import com.example.mywallet.data.dn
 import com.example.mywallet.data.dueText
 import com.example.mywallet.data.flameTier
 import com.example.mywallet.data.homeOn
+import com.example.mywallet.data.left
+import com.example.mywallet.data.paidSoFar
 import com.example.mywallet.data.loggedDays
 import com.example.mywallet.data.money
 import com.example.mywallet.data.moneyParts
@@ -163,10 +165,10 @@ fun HomeScreen(s: AppState, store: Store) {
             HorizontalPager(pager, Modifier.fillMaxSize(), pageSpacing = 0.dp) { p ->
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 22.dp, end = 22.dp, top = 8.dp, bottom = 150.dp)) {
                     when (p) {
-                        0 -> TodayPage(s, hide, { hide = !hide }, { receiptsOnly = false; go("search") }, onBackup = { go("backup") }, store = store) { r -> editing = r; sheetOpen = true }
+                        0 -> TodayPage(s, hide, { hide = !hide }, { receiptsOnly = false; go("search") }, onBackup = { go("backup") }, onOpen = { go(it) }, store = store) { r -> editing = r; sheetOpen = true }
                         1 -> MoneyPage(s, hide, onOpen = { id -> val a = s.acc(id); if (a?.kind == "bank") { bankId = id; go("bank") } }, onHold = { id -> acctSel = id },
                             onEdit = { id -> acctEdit = id }, onDelete = { id -> acctDel = id }, onAdd = { addAcct = true })
-                        else -> PlanPage(s, hide)
+                        else -> PlanPage(s, hide) { go(it) }
                     }
                 }
             }
@@ -194,6 +196,7 @@ fun HomeScreen(s: AppState, store: Store) {
             when (sc) {
                 "bills" -> BillsScreen(s, store) { back() }
                 "debts" -> DebtsScreen(s, store) { back() }
+                "needs" -> NeedsScreen(s, store) { back() }
                 "goals" -> GoalsScreen(s, store) { back() }
                 "cats" -> CategoriesScreen(s, store) { back() }
                 "quick" -> QuickAddScreen(s, store) { back() }
@@ -329,10 +332,10 @@ private fun Divider() = Box(Modifier.fillMaxWidth().height(1.dp).background(Colo
 
 /* ============================ TODAY ============================ */
 
-private class NeedItem(val icon: String, val tint: Color, val title: String, val sub: String, val subColor: Color, val amount: String, val amountColor: Color, val sortDn: Long)
+private class NeedItem(val icon: String, val tint: Color, val title: String, val sub: String, val subColor: Color, val amount: String, val amountColor: Color, val sortDn: Long, val route: String = "")
 
 @Composable
-private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHistory: () -> Unit, onBackup: () -> Unit, store: Store, onEdit: (Rec) -> Unit) {
+private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHistory: () -> Unit, onBackup: () -> Unit, onOpen: (String) -> Unit, store: Store, onEdit: (Rec) -> Unit) {
     val nowMs = System.currentTimeMillis()
     val bkAge = if (s.lastBackup > 0) ((nowMs - s.lastBackup) / 86_400_000.0).toInt() else -1
     if (!s.sample && s.recs.size >= 5 && nowMs >= s.backupSnooze && (bkAge < 0 || bkAge >= 14)) {
@@ -417,19 +420,19 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
     val needs = ArrayList<NeedItem>()
     for (b in s.bills) {
         val d = billDue(b, t).dn
-        if (d - t <= 7) needs.add(NeedItem("\uD83D\uDDD3", MW.Amber, b.name, dueText(d), if (d < t) MW.Rose else MW.Dim, s.money(b.amount), Color.White, d))
+        if (d - t <= 7) needs.add(NeedItem("\uD83D\uDDD3", MW.Amber, b.name, dueText(d), if (d < t) MW.Rose else MW.Dim, s.money(b.amount), Color.White, d, "bills"))
     }
     for (d in s.debts.filter { !it.paid }) {
         val due = if (d.due.isNotEmpty()) dn(d.due) else Long.MAX_VALUE
         val late = d.due.isNotEmpty() && due < t
         val who = if (d.theyOweMe) "${d.who} owes you" else "You owe ${d.who}"
         val sub = if (d.due.isEmpty()) who else who + " · " + dueText(due)
-        needs.add(NeedItem("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, s.money(d.amount), if (d.theyOweMe) MW.Mint else Color.White, due))
+        needs.add(NeedItem("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, s.money(d.left()), if (d.theyOweMe) MW.Mint else Color.White, due, "debts"))
     }
     needs.sortBy { it.sortDn }
     if (needs.isNotEmpty() && s.homeOn("needs")) {
         Spacer(Modifier.height(14.dp))
-        GlassCard(Modifier.fillMaxWidth(), radius = 26.dp, padding = 18.dp) {
+        GlassCard(Modifier.fillMaxWidth().clickable { onOpen("needs") }, radius = 26.dp, padding = 18.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Lbl("Needs you", Modifier.weight(1f))
                 Box(Modifier.height(22.dp).clip(RoundedCornerShape(11.dp)).background(MW.Amber.copy(alpha = 0.22f)).padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
@@ -438,7 +441,7 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
             }
             needs.take(4).forEachIndexed { i, n ->
                 if (i > 0) Divider()
-                Row3(n.icon, n.tint, n.title, n.sub, n.subColor, if (hide) "••••" else n.amount, n.amountColor)
+                Row3(n.icon, n.tint, n.title, n.sub, n.subColor, if (hide) "••••" else n.amount, n.amountColor, onClick = { onOpen("needs") })
             }
         }
     }
@@ -603,7 +606,7 @@ private fun AccountCard(s: AppState, a: Account, idx: Int, hide: Boolean, editMo
 /* ============================ PLAN ============================ */
 
 @Composable
-private fun PlanPage(s: AppState, hide: Boolean) {
+private fun PlanPage(s: AppState, hide: Boolean, onOpen: (String) -> Unit) {
     val ym = todayStr().take(7)
     val b = s.budgets[ym] ?: emptyMap()
     val ids = b.keys.filter { s.cat(it) != null }
@@ -643,7 +646,7 @@ private fun PlanPage(s: AppState, hide: Boolean) {
                 row.forEach { g ->
                     val saved = g.contribs.sumOf { it.amount }
                     val f = if (g.target > 0) (saved / g.target).toFloat().coerceIn(0f, 1f) else 0f
-                    GlassCard(Modifier.weight(1f), radius = 24.dp, padding = 14.dp) {
+                    GlassCard(Modifier.weight(1f).clickable { onOpen("goals") }, radius = 24.dp, padding = 14.dp) {
                         Row(verticalAlignment = Alignment.CenterVertically) { GlyphIcon(g.icon.ifBlank { "🎯" }, MW.Mint, 18.dp); Spacer(Modifier.width(8.dp)); Text(g.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }
                         Spacer(Modifier.height(6.dp))
                         Text("${(f * 100).toInt()}%", style = numStyle(24f))
@@ -665,18 +668,33 @@ private fun PlanPage(s: AppState, hide: Boolean) {
             s.bills.sortedBy { billDue(it, t).dn }.take(4).forEachIndexed { i, b ->
                 if (i > 0) Divider()
                 val d = billDue(b, t).dn
-                Row3("🧾", if (d <= t) MW.Amber else Color.White, b.name, dueText(d), if (d < t) MW.Rose else MW.Dim, if (hide) "••••" else s.money(b.amount))
+                Row3("🧾", if (d <= t) MW.Amber else Color.White, b.name, dueText(d), if (d < t) MW.Rose else MW.Dim, if (hide) "••••" else s.money(b.amount), onClick = { onOpen("needs") })
             }
         }
         Spacer(Modifier.height(14.dp))
     }
 
-    val open = s.debts.filter { !it.paid }
-    val owed = open.filter { it.theyOweMe }.sumOf { it.amount }
-    val iowe = open.filter { !it.theyOweMe }.sumOf { it.amount }
-    GlassCard(Modifier.fillMaxWidth(), radius = 22.dp, padding = 14.dp) {
-        Text("Debts", style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
-        Text(if (open.isEmpty()) "No open debts" else if (hide) "Owed to you ••• · You owe •••" else "Owed to you ${s.money(owed)} · You owe ${s.money(iowe)}", style = TextStyle(color = MW.Dim, fontSize = 12.sp))
+    val open = s.debts.filter { !it.paid }.sortedBy { if (it.due.isEmpty()) Long.MAX_VALUE else dn(it.due) }
+    val owed = open.filter { it.theyOweMe }.sumOf { it.left() }
+    val iowe = open.filter { !it.theyOweMe }.sumOf { it.left() }
+    GlassCard(Modifier.fillMaxWidth(), radius = 26.dp, padding = 18.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Lbl("Debts", Modifier.weight(1f))
+            Text("Open", Modifier.clickable { onOpen("needs") }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+        }
+        if (open.isEmpty()) {
+            Text("No open debts", Modifier.padding(top = 8.dp), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+        } else {
+            Text(if (hide) "Owed to you ••• · You owe •••" else "Owed to you ${s.money(owed)} · You owe ${s.money(iowe)}", Modifier.padding(top = 6.dp), style = TextStyle(color = MW.Dim, fontSize = 12.sp))
+            val t = todayDn()
+            open.take(4).forEach { d ->
+                Divider()
+                val late = d.due.isNotEmpty() && dn(d.due) < t
+                val who = if (d.theyOweMe) "Owes you" else "You owe"
+                val sub = who + (if (d.pays.isNotEmpty()) " · paid " + s.money(d.paidSoFar()) + " of " + s.money(d.amount) else "") + (if (d.due.isNotEmpty()) " · " + dueText(dn(d.due)) else "")
+                Row3("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, if (hide) "••••" else s.money(d.left()), if (d.theyOweMe) MW.Mint else Color.White, onClick = { onOpen("needs") })
+            }
+        }
     }
     if (ids.isEmpty() && s.goals.isEmpty() && s.bills.isEmpty()) {
         Spacer(Modifier.height(14.dp))

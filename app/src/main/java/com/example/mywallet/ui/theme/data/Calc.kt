@@ -251,6 +251,12 @@ fun AppState.safeToday(): Safe {
 }
 
 /* ---------- bills, debts ---------- */
+/** how much of a debt has been paid back so far (a debt marked fully paid counts as all of it) */
+fun Debt.paidSoFar(): Double = if (paid && pays.isEmpty()) amount else pays.sumOf { it.amount }.coerceAtMost(amount)
+
+/** how much is still owed */
+fun Debt.left(): Double = if (paid) 0.0 else (amount - paidSoFar()).coerceAtLeast(0.0)
+
 class BillDue(val dn: Long, val key: String)
 
 fun billDue(b: Bill, t: Long): BillDue {

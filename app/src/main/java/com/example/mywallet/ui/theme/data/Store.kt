@@ -469,6 +469,22 @@ class Store(private val context: Context) {
         commit(JsonObject(r + ("debts" to JsonArray(debts)) + ("recs" to JsonArray(listAt(r, "recs") + rec))))
     }
 
+    /** a part payment (or the last one) on a debt: books the record and remembers how much was paid */
+    fun payDebt(debtId: String, amount: Double, date: String, rec: JsonObject) {
+        val r = root ?: return
+        val debts = listAt(r, "debts").map { e ->
+            val o = e as? JsonObject
+            if (o != null && (o["id"] as? JsonPrimitive)?.content == debtId) {
+                val total = (o["amount"] as? JsonPrimitive)?.content?.toDoubleOrNull() ?: 0.0
+                val old = (o["pays"] as? JsonArray) ?: JsonArray(emptyList())
+                val sum = old.sumOf { ((it as? JsonObject)?.get("amount") as? JsonPrimitive)?.content?.toDoubleOrNull() ?: 0.0 } + amount
+                val pay = kotlinx.serialization.json.buildJsonObject { put("date", date); put("amount", amount) }
+                JsonObject(o + ("pays" to JsonArray(old + pay)) + ("paid" to kotlinx.serialization.json.JsonPrimitive(sum >= total - 0.005)))
+            } else e
+        }
+        commit(JsonObject(r + ("debts" to JsonArray(debts)) + ("recs" to JsonArray(listAt(r, "recs") + rec))))
+    }
+
     /** pay a bill: book an expense and mark this period paid */
     fun payBill(billId: String, key: String, rec: JsonObject) {
         val r = root ?: return
