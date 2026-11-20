@@ -69,7 +69,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-val PAL = listOf(Color(0xFF2DD4A7), Color(0xFF7BB8FF), Color(0xFFFFCB7A), Color(0xFFB9A6FF), Color(0xFFFF9FB0), Color(0xFF8CFFC0), Color(0xFFFF8A5A), Color(0xFF6EE7F9))
+val PAL: List<Color> get() = listOf(MW.Accent, Color(0xFF7BB8FF), Color(0xFFFFCB7A), Color(0xFFB9A6FF), Color(0xFFFF9FB0), Color(0xFF8CFFC0), Color(0xFFFF8A5A), Color(0xFF6EE7F9))
 
 /* ---------- month helpers ---------- */
 fun ymAdd(ym: String, d: Int): String {

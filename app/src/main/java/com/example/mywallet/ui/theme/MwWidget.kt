@@ -16,6 +16,8 @@ object LaunchBus {
     var add: String? by mutableStateOf(null)
     /** search text to open the Search screen with (for example a tapped tag) */
     var query: String? by mutableStateOf(null)
+    /** which part of the history to open Search with: "today" or "earlier" */
+    var range: String? by mutableStateOf(null)
     /** developer mode: lock the app now */
     var lockNow: Boolean by mutableStateOf(false)
 }

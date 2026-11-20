@@ -485,6 +485,13 @@ class Store(private val context: Context) {
         commit(JsonObject(r + ("debts" to JsonArray(debts)) + ("recs" to JsonArray(listAt(r, "recs") + rec))))
     }
 
+    /** developer tool: delete every record dated on or after this day */
+    fun deleteRecsSince(fromDate: String) {
+        val r = root ?: return
+        val kept = listAt(r, "recs").filter { e -> ((e as? JsonObject)?.get("date") as? JsonPrimitive)?.content?.let { it < fromDate } ?: true }
+        commit(JsonObject(r + ("recs" to JsonArray(kept))))
+    }
+
     /** pay a bill: book an expense and mark this period paid */
     fun payBill(billId: String, key: String, rec: JsonObject) {
         val r = root ?: return

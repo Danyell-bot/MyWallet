@@ -89,6 +89,7 @@ import com.example.mywallet.data.rateOf
 import com.example.mywallet.data.safeToday
 import com.example.mywallet.data.spentIn
 import com.example.mywallet.data.streak
+import com.example.mywallet.data.streakWarn
 import com.example.mywallet.data.allowanceInfo
 import com.example.mywallet.data.todayDn
 import com.example.mywallet.data.todayStr
@@ -102,6 +103,7 @@ private fun soon(ctx: android.content.Context, what: String) =
 @Composable
 fun HomeScreen(s: AppState, store: Store) {
     val ctx = LocalContext.current
+    LaunchedEffect(s.settings.palette, s.settings.pal) { MwTheme.apply(s.settings.palette, s.settings.pal) }
     val pager = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
     val page = pager.currentPage + pager.currentPageOffsetFraction
@@ -113,6 +115,8 @@ fun HomeScreen(s: AppState, store: Store) {
     val stack = remember { androidx.compose.runtime.mutableStateListOf<String>() }
     val screen = stack.lastOrNull()
     fun go(k: String) { if (stack.lastOrNull() != k) stack.add(k) }
+    var debtFocus by remember { mutableStateOf<String?>(null) }
+    fun openRoute(r: String) { if (r.startsWith("debts#")) { debtFocus = r.substringAfter('#'); go("debts") } else go(r) }
     fun back() { if (stack.isNotEmpty()) stack.removeAt(stack.lastIndex) }
     var receiptsOnly by remember { mutableStateOf(false) }
     var menuKey by remember { mutableStateOf(0) }
@@ -123,6 +127,45 @@ fun HomeScreen(s: AppState, store: Store) {
     var acctSel by remember { mutableStateOf<String?>(null) }
     var celebrate by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var snap by remember { mutableStateOf<Triple<Boolean, Int, Int>?>(null) }
+    var warnPop by remember { mutableStateOf<com.example.mywallet.data.StreakWarn?>(null) }
+    var endedPop by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    fun playPop(kind: String, n: Int) {
+        when (kind) {
+            "warnFree" -> warnPop = com.example.mywallet.data.StreakWarn(n, true, false)
+            "warnNone" -> warnPop = com.example.mywallet.data.StreakWarn(n, false, false)
+            "ended" -> endedPop = n to (0..3).random()
+            "ended0" -> endedPop = n to 0
+            "ended1" -> endedPop = n to 1
+            "ended2" -> endedPop = n to 2
+            "ended3" -> endedPop = n to 3
+        }
+    }
+    // a streak that was alive the last time you opened the app and is now gone: the "streak ended" moment, once
+    LaunchedEffect(Unit) {
+        val p = ctx.getSharedPreferences("mw_prefs", 0)
+        val seen = p.getInt("streakSeen", 0)
+        if (s.streak() == 0 && seen >= 2) {
+            p.edit().putInt("streakSeen", 0).apply()
+            kotlinx.coroutines.delay(900)
+            endedPop = seen to (0..3).random()
+        }
+    }
+    LaunchedEffect(s) {
+        val st = s.streak()
+        val p = ctx.getSharedPreferences("mw_prefs", 0)
+        if (st > 0 && p.getInt("streakSeen", 0) != st) p.edit().putInt("streakSeen", st).apply()
+    }
+    // once a day, when you open the app and a day was missed (the weekly free day was used): show the warning moment
+    LaunchedEffect(Unit) {
+        val w = s.streakWarn()
+        val p = ctx.getSharedPreferences("mw_prefs", 0)
+        val today = todayDn()
+        if (w != null && p.getLong("warnDay", -1L) != today) {
+            p.edit().putLong("warnDay", today).apply()
+            kotlinx.coroutines.delay(900)
+            warnPop = w
+        }
+    }
     // first record of a new day brings the streak back to life: show the "new day" moment
     LaunchedEffect(s) {
         val lit = s.loggedDays().contains(todayDn()); val st = s.streak(); val n = s.recs.size
@@ -165,10 +208,10 @@ fun HomeScreen(s: AppState, store: Store) {
             HorizontalPager(pager, Modifier.fillMaxSize(), pageSpacing = 0.dp) { p ->
                 Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = 22.dp, end = 22.dp, top = 8.dp, bottom = 150.dp)) {
                     when (p) {
-                        0 -> TodayPage(s, hide, { hide = !hide }, { receiptsOnly = false; go("search") }, onBackup = { go("backup") }, onOpen = { go(it) }, store = store) { r -> editing = r; sheetOpen = true }
+                        0 -> TodayPage(s, hide, { hide = !hide }, { receiptsOnly = false; go("search") }, onBackup = { go("backup") }, onOpen = { openRoute(it) }, onRange = { rg -> com.example.mywallet.LaunchBus.range = rg; receiptsOnly = false; go("search") }, store = store) { r -> editing = r; sheetOpen = true }
                         1 -> MoneyPage(s, hide, onOpen = { id -> val a = s.acc(id); if (a?.kind == "bank") { bankId = id; go("bank") } }, onHold = { id -> acctSel = id },
                             onEdit = { id -> acctEdit = id }, onDelete = { id -> acctDel = id }, onAdd = { addAcct = true })
-                        else -> PlanPage(s, hide) { go(it) }
+                        else -> PlanPage(s, hide) { openRoute(it) }
                     }
                 }
             }
@@ -195,8 +238,7 @@ fun HomeScreen(s: AppState, store: Store) {
             if (sc == "search") SearchScreen(s, store, receiptsOnly, onEdit = { r -> editing = r; sheetOpen = true }, onClose = { back() })
             when (sc) {
                 "bills" -> BillsScreen(s, store) { back() }
-                "debts" -> DebtsScreen(s, store) { back() }
-                "needs" -> NeedsScreen(s, store) { back() }
+                "debts" -> DebtsScreen(s, store, debtFocus) { debtFocus = null; back() }
                 "goals" -> GoalsScreen(s, store) { back() }
                 "cats" -> CategoriesScreen(s, store) { back() }
                 "quick" -> QuickAddScreen(s, store) { back() }
@@ -215,7 +257,7 @@ fun HomeScreen(s: AppState, store: Store) {
                 "payday" -> PaydayScreen(s, store) { back() }
                 "year" -> YearScreen(s) { back() }
                 "backup" -> BackupScreen(s, store) { back() }
-                "dev" -> DevScreen(s, store, { back() }, { k -> go(k) }, { a, b -> celebrate = a to b }) { ctx.getSharedPreferences("mw_prefs", 0).edit().putBoolean("dev", false).apply(); back() }
+                "dev" -> DevScreen(s, store, { back() }, { k -> go(k) }, { a, b -> celebrate = a to b }, { k, n -> playPop(k, n) }) { ctx.getSharedPreferences("mw_prefs", 0).edit().putBoolean("dev", false).apply(); back() }
                 "reminders" -> RemindersScreen(store) { back() }
                 "bank" -> BankScreen(s, store, bankId, onRecord = { t, a -> editing = null; preset = t to a; sheetOpen = true }, onEdit = { r -> editing = r; sheetOpen = true }, onClose = { back() })
             }
@@ -230,6 +272,8 @@ fun HomeScreen(s: AppState, store: Store) {
         if (sheetOpen) CompositionLocalProvider(LocalHaze provides haze) { RecordSheet(s, store, editing, { sheetOpen = false; editing = null; preset = null }, preset?.first, preset?.second) }
         FxLayer()
         celebrate?.let { c -> StreakCelebration(c.first, c.second) { celebrate = null } }
+        endedPop?.let { e -> StreakEnded(e.first, e.second, onLog = { endedPop = null; editing = null; sheetOpen = true }) { endedPop = null } }
+        warnPop?.let { w -> StreakWarning(w.streak, w.missedYesterday, onLog = { warnPop = null; editing = null; sheetOpen = true }) { warnPop = null } }
         if (!nameDismissed && s.settings.name.isBlank() && !s.settings.nameAsked) {
             NamePrompt(onSave = { n -> store.updateSettings(mapOf("name" to JsonPrimitive(n), "nameAsked" to JsonPrimitive(true))); nameDismissed = true },
                 onSkip = { store.updateSettings(mapOf("nameAsked" to JsonPrimitive(true))); nameDismissed = true })
@@ -300,7 +344,7 @@ private fun Dock(modifier: Modifier, ctx: android.content.Context, onSearch: () 
         Box(
             Modifier.size(54.dp).clip(CircleShape).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))).clickable { onAdd() },
             contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Rounded.Add, "Add a record", tint = Color(0xFF04130F), modifier = Modifier.size(28.dp)) }
+        ) { Icon(Icons.Rounded.Add, "Add a record", tint = MW.OnAccent, modifier = Modifier.size(28.dp)) }
         Box(Modifier.size(50.dp).clip(CircleShape).clickable { onSearch() }, contentAlignment = Alignment.Center) {
             Icon(Icons.Rounded.Search, "Search and jump", tint = Color.White.copy(alpha = 0.85f), modifier = Modifier.size(24.dp))
         }
@@ -335,7 +379,7 @@ private fun Divider() = Box(Modifier.fillMaxWidth().height(1.dp).background(Colo
 private class NeedItem(val icon: String, val tint: Color, val title: String, val sub: String, val subColor: Color, val amount: String, val amountColor: Color, val sortDn: Long, val route: String = "")
 
 @Composable
-private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHistory: () -> Unit, onBackup: () -> Unit, onOpen: (String) -> Unit, store: Store, onEdit: (Rec) -> Unit) {
+private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHistory: () -> Unit, onBackup: () -> Unit, onOpen: (String) -> Unit, onRange: (String) -> Unit, store: Store, onEdit: (Rec) -> Unit) {
     val nowMs = System.currentTimeMillis()
     val bkAge = if (s.lastBackup > 0) ((nowMs - s.lastBackup) / 86_400_000.0).toInt() else -1
     if (!s.sample && s.recs.size >= 5 && nowMs >= s.backupSnooze && (bkAge < 0 || bkAge >= 14)) {
@@ -343,7 +387,7 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
             MwIcon("cloud", MW.Amber, 22.dp)
             Spacer(Modifier.width(10.dp))
             Text(if (bkAge < 0) "Back up your data. You have not made one yet." else "Back up your data. The last one was $bkAge days ago.", Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 18.sp))
-            Box(Modifier.clip(RoundedCornerShape(99.dp)).background(MW.Accent).clickable { onBackup() }.padding(horizontal = 14.dp, vertical = 8.dp)) { Text("Back up", style = TextStyle(color = Color(0xFF04130F), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)) }
+            Box(Modifier.clip(RoundedCornerShape(99.dp)).background(MW.Accent).clickable { onBackup() }.padding(horizontal = 14.dp, vertical = 8.dp)) { Text("Back up", style = TextStyle(color = MW.OnAccent, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)) }
             Box(Modifier.size(36.dp).clip(CircleShape).clickable { store.setTopLive("backupSnooze", JsonPrimitive(System.currentTimeMillis() + 7L * 86_400_000L)) }, contentAlignment = Alignment.Center) { MwIcon("close", MW.Dim, 16.dp, weight = 2f) }
         }
         Spacer(Modifier.height(12.dp))
@@ -415,7 +459,7 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
         }
     }
 
-    // Needs you
+    // Coming up (bills and open debts that are close)
     val t = todayDn()
     val needs = ArrayList<NeedItem>()
     for (b in s.bills) {
@@ -427,31 +471,34 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
         val late = d.due.isNotEmpty() && due < t
         val who = if (d.theyOweMe) "${d.who} owes you" else "You owe ${d.who}"
         val sub = if (d.due.isEmpty()) who else who + " · " + dueText(due)
-        needs.add(NeedItem("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, s.money(d.left()), if (d.theyOweMe) MW.Mint else Color.White, due, "debts"))
+        needs.add(NeedItem("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, s.money(d.left()), if (d.theyOweMe) MW.Mint else Color.White, due, "debts#" + d.id))
     }
     needs.sortBy { it.sortDn }
     if (needs.isNotEmpty() && s.homeOn("needs")) {
         Spacer(Modifier.height(14.dp))
-        GlassCard(Modifier.fillMaxWidth().clickable { onOpen("needs") }, radius = 26.dp, padding = 18.dp) {
+        GlassCard(Modifier.fillMaxWidth(), radius = 26.dp, padding = 18.dp) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Lbl("Needs you", Modifier.weight(1f))
+                Lbl("Coming up", Modifier.weight(1f))
                 Box(Modifier.height(22.dp).clip(RoundedCornerShape(11.dp)).background(MW.Amber.copy(alpha = 0.22f)).padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
                     Text("${needs.size}", style = TextStyle(color = MW.Amber, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold))
                 }
             }
             needs.take(4).forEachIndexed { i, n ->
                 if (i > 0) Divider()
-                Row3(n.icon, n.tint, n.title, n.sub, n.subColor, if (hide) "••••" else n.amount, n.amountColor, onClick = { onOpen("needs") })
+                Row3(n.icon, n.tint, n.title, n.sub, n.subColor, if (hide) "••••" else n.amount, n.amountColor, onClick = { if (n.route.isNotEmpty()) onOpen(n.route) })
             }
         }
     }
 
     // Today
     val today = todayStr()
-    val todays = s.recs.filter { it.date == today && it.type != "check" }.sortedByDescending { it.ts }
+    val todays = s.recs.filter { it.date == today }.sortedByDescending { it.ts }
     if (s.homeOn("today")) {
     Spacer(Modifier.height(18.dp))
-    Lbl("Today")
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Lbl("Today", Modifier.weight(1f))
+        if (todays.isNotEmpty()) Text("See all", Modifier.clickable { onRange("today") }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+    }
     if (todays.isEmpty()) {
         Text("Nothing logged yet today.", Modifier.padding(top = 12.dp), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
     } else {
@@ -459,11 +506,11 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
             if (i > 0) Divider()
             val c = s.cat(r.cat)
             val sign = if (r.type == "income") 1.0 else if (r.type == "expense") -1.0 else 0.0
-            val title = r.note.ifBlank { c?.name ?: if (r.type == "transfer") "Transfer" else "Record" }
+            val title = r.note.ifBlank { c?.name ?: when (r.type) { "transfer" -> "Transfer"; "check" -> "Balance check"; else -> "Record" } }
             Row3(
-                if (r.type == "transfer") "⇄" else c?.icon ?: if (r.type == "income") "+" else "−", Color.White,
+                if (r.type == "transfer") "⇄" else if (r.type == "check") "\u2696" else c?.icon ?: if (r.type == "income") "+" else "−", Color.White,
                 title, (c?.name ?: "") + (if (c != null) " · " else "") + (s.acc(r.acct)?.name ?: ""), MW.Dim,
-                if (hide) "••••" else s.money(sign * r.amount, signed = true).let { if (sign == 0.0) s.money(r.amount) else it },
+                if (hide) "••••" else if (r.type == "check") "= " + s.money(r.amount) else s.money(sign * r.amount, signed = true).let { if (sign == 0.0) s.money(r.amount) else it },
                 if (r.type == "income") MW.Mint else Color.White,
                 onClick = { onEdit(r) },
             )
@@ -472,22 +519,22 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
     }
 
     // Earlier days
-    val earlier = s.recs.filter { it.date < today && it.type != "check" }.sortedWith(compareByDescending<Rec> { it.date }.thenByDescending { it.ts }).take(8)
+    val earlier = s.recs.filter { it.date < today }.sortedWith(compareByDescending<Rec> { it.date }.thenByDescending { it.ts }).take(8)
     if (earlier.isNotEmpty() && s.homeOn("earlier")) {
         Spacer(Modifier.height(22.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Lbl("Earlier", Modifier.weight(1f))
-            Text("See all", Modifier.clickable { onHistory() }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+            Text("See all", Modifier.clickable { onRange("earlier") }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
         }
         earlier.forEachIndexed { i, r ->
             if (i > 0) Divider()
             val c = s.cat(r.cat)
             val sign = if (r.type == "income") 1.0 else if (r.type == "expense") -1.0 else 0.0
-            val title = r.note.ifBlank { c?.name ?: if (r.type == "transfer") "Transfer" else "Record" }
+            val title = r.note.ifBlank { c?.name ?: when (r.type) { "transfer" -> "Transfer"; "check" -> "Balance check"; else -> "Record" } }
             Row3(
-                if (r.type == "transfer") "⇄" else c?.icon ?: if (r.type == "income") "+" else "−", Color.White,
+                if (r.type == "transfer") "⇄" else if (r.type == "check") "\u2696" else c?.icon ?: if (r.type == "income") "+" else "−", Color.White,
                 title, fmtDate(r.date) + " · " + (s.acc(r.acct)?.name ?: ""), MW.Dim,
-                if (hide) "••••" else s.money(sign * r.amount, signed = true).let { if (sign == 0.0) s.money(r.amount) else it },
+                if (hide) "••••" else if (r.type == "check") "= " + s.money(r.amount) else s.money(sign * r.amount, signed = true).let { if (sign == 0.0) s.money(r.amount) else it },
                 if (r.type == "income") MW.Mint else Color.White,
                 onClick = { onEdit(r) },
             )
@@ -596,7 +643,7 @@ private fun AccountCard(s: AppState, a: Account, idx: Int, hide: Boolean, editMo
             exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.6f),
         ) {
             Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(Modifier.size(38.dp).clip(CircleShape).background(Color(0xFF2DD4A7)).clickable { onEdit() }, contentAlignment = Alignment.Center) { MwIcon("edit", Color(0xFF04130F), 20.dp, weight = 2.2f) }
+                Box(Modifier.size(38.dp).clip(CircleShape).background(MW.Accent).clickable { onEdit() }, contentAlignment = Alignment.Center) { MwIcon("edit", MW.OnAccent, 20.dp, weight = 2.2f) }
                 Box(Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFFFCB7A)).clickable { onDelete() }, contentAlignment = Alignment.Center) { MwIcon("trash", Color(0xFF2A1400), 20.dp, weight = 2.2f) }
             }
         }
@@ -668,7 +715,7 @@ private fun PlanPage(s: AppState, hide: Boolean, onOpen: (String) -> Unit) {
             s.bills.sortedBy { billDue(it, t).dn }.take(4).forEachIndexed { i, b ->
                 if (i > 0) Divider()
                 val d = billDue(b, t).dn
-                Row3("🧾", if (d <= t) MW.Amber else Color.White, b.name, dueText(d), if (d < t) MW.Rose else MW.Dim, if (hide) "••••" else s.money(b.amount), onClick = { onOpen("needs") })
+                Row3("🧾", if (d <= t) MW.Amber else Color.White, b.name, dueText(d), if (d < t) MW.Rose else MW.Dim, if (hide) "••••" else s.money(b.amount), onClick = { onOpen("bills") })
             }
         }
         Spacer(Modifier.height(14.dp))
@@ -680,7 +727,7 @@ private fun PlanPage(s: AppState, hide: Boolean, onOpen: (String) -> Unit) {
     GlassCard(Modifier.fillMaxWidth(), radius = 26.dp, padding = 18.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Lbl("Debts", Modifier.weight(1f))
-            Text("Open", Modifier.clickable { onOpen("needs") }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+            Text("Open", Modifier.clickable { onOpen("debts") }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
         }
         if (open.isEmpty()) {
             Text("No open debts", Modifier.padding(top = 8.dp), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
@@ -692,7 +739,7 @@ private fun PlanPage(s: AppState, hide: Boolean, onOpen: (String) -> Unit) {
                 val late = d.due.isNotEmpty() && dn(d.due) < t
                 val who = if (d.theyOweMe) "Owes you" else "You owe"
                 val sub = who + (if (d.pays.isNotEmpty()) " · paid " + s.money(d.paidSoFar()) + " of " + s.money(d.amount) else "") + (if (d.due.isNotEmpty()) " · " + dueText(dn(d.due)) else "")
-                Row3("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, if (hide) "••••" else s.money(d.left()), if (d.theyOweMe) MW.Mint else Color.White, onClick = { onOpen("needs") })
+                Row3("\uD83D\uDD01", if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81), d.who, sub, if (late) MW.Rose else MW.Dim, if (hide) "••••" else s.money(d.left()), if (d.theyOweMe) MW.Mint else Color.White, onClick = { onOpen("debts") })
             }
         }
     }
@@ -738,7 +785,7 @@ private fun NamePrompt(onSave: (String) -> Unit, onSkip: () -> Unit) {
                     Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(24.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent)))
                         .clickable { if (name.isNotBlank()) onSave(name.trim()) else onSkip() },
                     contentAlignment = Alignment.Center,
-                ) { Text("Save", style = TextStyle(color = Color(0xFF04130F), fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
+                ) { Text("Save", style = TextStyle(color = MW.OnAccent, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
             }
         }
     }

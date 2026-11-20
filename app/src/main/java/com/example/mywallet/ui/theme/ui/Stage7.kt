@@ -326,6 +326,7 @@ fun DisplayScreen(s: AppState, store: Store, onClose: () -> Unit) {
             Spacer(Modifier.height(6.dp))
             MoneyText(s.moneyParts(1234567.891), 34f)
         }
+        ThemePicker(s, store)
         FChips("Currency", listOf("₱", "$", "€", "£", "¥", "₹", "₩", "RM", "Rp").map { opt(it, it) }, s.settings.cur, { cur = it; store.updateSettings(mapOf("cur" to JsonPrimitive(it))) })
         FText("Or type your own symbol", cur, { cur = it.take(4); if (it.isNotBlank()) store.updateSettings(mapOf("cur" to JsonPrimitive(it.trim()))) }, "₱")
         FChips("Symbol position", listOf(opt("start", "Before amount"), opt("end", "After amount")), s.settings.pos, { store.updateSettings(mapOf("pos" to JsonPrimitive(it))) }, scroll = false)
@@ -335,7 +336,7 @@ fun DisplayScreen(s: AppState, store: Store, onClose: () -> Unit) {
         Lbl("Home screen", Modifier.padding(top = 8.dp))
         listOf(
             Triple("safe", "Safe-to-spend cards", "The two cards under your balance"),
-            Triple("needs", "Needs you", "Bills and debts that are close"),
+            Triple("needs", "Coming up", "Bills and debts that are close"),
             Triple("today", "Today's records", "What you logged today"),
             Triple("earlier", "Earlier records", "Your most recent past days"),
         ).forEach { (k, title, sub) ->

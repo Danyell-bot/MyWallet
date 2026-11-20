@@ -104,7 +104,7 @@ private fun Confetti() {
         val r = kotlin.random.Random(System.nanoTime())
         List(110) { floatArrayOf(r.nextFloat(), r.nextFloat() * 0.25f, (r.nextFloat() - 0.5f) * 0.7f, 0.5f + r.nextFloat() * 0.9f, r.nextFloat() * 360f, r.nextInt(6).toFloat(), 6f + r.nextFloat() * 8f) }
     }
-    val cols = listOf(Color(0xFF2DD4A7), Color(0xFFFFCB7A), Color(0xFFFF9FB0), Color(0xFF9CC4FF), Color(0xFFB9A6FF), Color(0xFFFFFFFF))
+    val cols = listOf(MW.Accent, Color(0xFFFFCB7A), Color(0xFFFF9FB0), Color(0xFF9CC4FF), Color(0xFFB9A6FF), Color(0xFFFFFFFF))
     val t = remember { Animatable(0f) }
     LaunchedEffect(Unit) { t.animateTo(1f, tween(2600, easing = LinearEasing)) }
     Canvas(Modifier.fillMaxSize()) {
@@ -157,10 +157,10 @@ fun BadgesScreen(s: AppState, onClose: () -> Unit) {
     val li = s.levelInfo()
     val have = s.unlocked.toSet()
     ToolShell("Badges and level", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp), tint = Color(0xFF16A37F)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp), tint = MW.Tint).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(64.dp).clip(CircleShape).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))), contentAlignment = Alignment.Center) {
-                    Text(li.level.toString(), style = TextStyle(color = Color(0xFF04130F), fontSize = if (li.level > 99) 22.sp else 28.sp, fontWeight = FontWeight.Black))
+                    Text(li.level.toString(), style = TextStyle(color = MW.OnAccent, fontSize = if (li.level > 99) 22.sp else 28.sp, fontWeight = FontWeight.Black))
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
@@ -187,7 +187,7 @@ fun BadgesScreen(s: AppState, onClose: () -> Unit) {
                 row.forEach { b ->
                     val on = have.contains(b.id)
                     Column(
-                        Modifier.weight(1f).height(142.dp).glassLite(RoundedCornerShape(24.dp), tint = if (on) Color(0xFF16A37F) else null).padding(14.dp),
+                        Modifier.weight(1f).height(142.dp).glassLite(RoundedCornerShape(24.dp), tint = if (on) MW.Tint else null).padding(14.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Box(
@@ -376,8 +376,9 @@ fun YearScreen(s: AppState, onClose: () -> Unit) {
         Color(0xFF0FB98A) to Color(0xFF0B3A7A), Color(0xFF7C3AED) to Color(0xFF1B1464), Color(0xFFFF8A5A) to Color(0xFF8E1257),
         Color(0xFFE8A93A) to Color(0xFF7A0C2B), Color(0xFF2F7BFF) to Color(0xFF4B1FA8), Color(0xFF16C784) to Color(0xFF1B38D6),
     )
-    val c1 by animateColorAsState(pairs[pager.currentPage].first, tween(600), label = "c1")
-    val c2 by animateColorAsState(pairs[pager.currentPage].second, tween(600), label = "c2")
+    val tp = MwTheme.slide(pager.currentPage, pairs[pager.currentPage].first, pairs[pager.currentPage].second)
+    val c1 by animateColorAsState(tp.first, tween(600), label = "c1")
+    val c2 by animateColorAsState(tp.second, tween(600), label = "c2")
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(c1, c2)))) {
         HorizontalPager(pager, Modifier.fillMaxSize()) { i ->
             val vis = pager.currentPage == i

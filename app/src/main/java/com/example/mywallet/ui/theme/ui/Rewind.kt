@@ -135,8 +135,9 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
     exp.forEach { byDow[Math.floorMod(dn(it.date) + 4, 7L).toInt()] += it.amount * s.rateOf(it.acct) }
     val busiest = if (ex > 0) byDow.indices.maxByOrNull { byDow[it] } else null
 
-    val slides = remember(ym, exp.isEmpty()) {
-        if (exp.isEmpty()) listOf(
+    val themeKey = MwTheme.palette.c1.hashCode() + MwTheme.palette.c3.hashCode() + MwTheme.palette.id.hashCode()
+    val slides = remember(ym, exp.isEmpty(), themeKey) {
+        (if (exp.isEmpty()) listOf(
             Slide("intro", Color(0xFF0FB98A), Color(0xFF0B3A7A)), Slide("empty", Color(0xFF3B2A8C), Color(0xFF0B1020)),
         ) else listOf(
             Slide("intro", Color(0xFF0FB98A), Color(0xFF0B3A7A)), Slide("spent", Color(0xFF7C3AED), Color(0xFF1B1464)),
@@ -144,6 +145,7 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
             Slide("big", Color(0xFFE8A93A), Color(0xFF7A0C2B)), Slide("days", Color(0xFF16C784), Color(0xFF1B38D6)),
             Slide("flow", Color(0xFF2F7BFF), Color(0xFF4B1FA8)), Slide("final", Color(0xFFB8A6FF), Color(0xFF1B2766)),
         )
+        ).mapIndexed { i, sl -> MwTheme.slide(i, sl.c1, sl.c2).let { Slide(sl.kind, it.first, it.second) } }
     }
     var idx by remember(ym) { mutableStateOf(0) }
     val ctx = LocalContext.current
@@ -327,7 +329,7 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                         Kicker("Money in and out")
                         Spacer(Modifier.height(22.dp))
                         val mx = maxOf(inc, ex, 1.0)
-                        listOf(Triple("In", inc, Color(0xFFB8FFE6)), Triple("Out", ex, Color(0xFFFFC2CD))).forEachIndexed { n, (label, v, col) ->
+                        listOf(Triple("In", inc, if (MwTheme.isDefault) Color(0xFFB8FFE6) else androidx.compose.ui.graphics.lerp(MW.Accent, Color.White, 0.6f)), Triple("Out", ex, Color(0xFFFFC2CD))).forEachIndexed { n, (label, v, col) ->
                             var go by remember { mutableStateOf(false) }
                             LaunchedEffect(Unit) { delay(300L + n * 350L); go = true }
                             val f by animateFloatAsState(if (go) (v / mx).toFloat() else 0f, tween(1000, easing = FastOutSlowInEasing), label = "flow")

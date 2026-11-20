@@ -43,7 +43,11 @@ import com.example.mywallet.data.FLAME_DAYS
 import com.example.mywallet.data.LEVEL_TITLES
 import com.example.mywallet.data.Store
 import com.example.mywallet.data.earnedBadges
+import com.example.mywallet.data.bestStreak
 import com.example.mywallet.data.fromDn
+import com.example.mywallet.data.guessCat
+import com.example.mywallet.data.loggedDays
+import com.example.mywallet.data.streakWarn
 import com.example.mywallet.data.levelInfoFor
 import com.example.mywallet.data.streak
 import com.example.mywallet.data.todayDn
@@ -77,7 +81,7 @@ private fun Btns(vararg items: Pair<String, () -> Unit>) {
 private val SAMPLE_NOTES = listOf("Lunch", "Grab ride", "Groceries #food", "Coffee", "Load", "Netflix #subs", "Notebook #school", "Snacks", "Jeep fare", "Milk tea #treat")
 
 @Composable
-fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -> Unit, onCelebrate: (Int, Int) -> Unit, onTurnOff: () -> Unit) {
+fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -> Unit, onCelebrate: (Int, Int) -> Unit, onPlay: (String, Int) -> Unit, onTurnOff: () -> Unit) {
     val ctx = LocalContext.current
     var shift by remember { mutableStateOf(DAY_SHIFT) }
     var from by remember { mutableStateOf("19") }
@@ -89,6 +93,28 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
     var demoOn by remember { mutableStateOf(true) }
     var chip by remember { mutableStateOf("a") }
     var showIcons by remember { mutableStateOf(false) }
+    var popN by remember { mutableStateOf("12") }
+    var guessNote by remember { mutableStateOf("") }
+    var guessType by remember { mutableStateOf("expense") }
+    var dbg by remember { mutableStateOf(0) }
+    val prefs = remember { ctx.getSharedPreferences("mw_prefs", 0) }
+
+    /** adds one small record on each of the given days (skips days that already have one) */
+    fun logDays(days: List<Long>, label: String) {
+        val acct = s.accounts.firstOrNull { !it.ignored }?.id ?: ""
+        val cat = s.cats.firstOrNull { it.type == "expense" && !it.ignored }?.id ?: ""
+        if (acct.isEmpty() || cat.isEmpty()) { dt(ctx, "Needs an account and an expense category"); return }
+        val have = s.loggedDays()
+        val base = System.nanoTime().toString(36)
+        val list = days.filter { it !in have }.mapIndexed { i, d ->
+            buildJsonObject {
+                put("id", "ds$base$i"); put("ts", System.currentTimeMillis() - i); put("type", "expense"); put("acct", acct); put("to", "")
+                put("cat", cat); put("amount", 25.0); put("date", fromDn(d)); put("note", "Dev streak")
+            }
+        }
+        if (list.isNotEmpty()) store.appendLists(mapOf("recs" to list))
+        dt(ctx, label + " (" + list.size + " records added)")
+    }
 
     fun setShift(v: Int) {
         DAY_SHIFT = v; shift = v
@@ -133,6 +159,108 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
                 FText("To", to, { to = it.filter { c -> c.isDigit() }.take(4) }, "20", modifier = Modifier.weight(1f))
                 GhostButton("Play") { onCelebrate(from.toIntOrNull() ?: 0, to.toIntOrNull() ?: 1) }
             }
+        }
+        DevCard("Pop-ups", "Play any of the full-screen moments right now. The once-a-day rule does not apply here.") {
+            FText("Streak number", popN, { popN = it.filter { c -> c.isDigit() }.take(4) }, "12")
+            val n = popN.toIntOrNull()?.coerceAtLeast(1) ?: 12
+            Btns(
+                "New day" to { onCelebrate(maxOf(0, n - 1), n) },
+                "Missed a day" to { onPlay("warnFree", n) },
+                "No free day left" to { onPlay("warnNone", n) },
+                "Ended: random" to { onPlay("ended", maxOf(2, n)) },
+                "Ended: water" to { onPlay("ended0", maxOf(2, n)) },
+                "Ended: sand" to { onPlay("ended1", maxOf(2, n)) },
+                "Ended: wind" to { onPlay("ended2", maxOf(2, n)) },
+                "Ended: rain" to { onPlay("ended3", maxOf(2, n)) },
+            )
+            Btns(
+                "Reset once-a-day flags" to { prefs.edit().putLong("warnDay", -1L).putInt("streakSeen", s.streak()).apply(); dbg++; dt(ctx, "Pop-ups can show again next time the app opens") },
+                "Pretend streak was $n" to { prefs.edit().putInt("streakSeen", maxOf(2, n)).apply(); dbg++; dt(ctx, "If your streak is 0 now, reopening the app shows Streak ended") },
+            )
+        }
+        DevCard("Streak scenarios", "Builds real records so you can walk through the real rules. Tip: make a streak up to yesterday, then use Time travel +1d (missed a day pop-up) and +2d (streak ended).") {
+            Btns(
+                "10-day streak to today" to { val t = todayDn(); logDays((0L..9L).map { t - it }, "Streak through today"); prefs.edit().putInt("streakSeen", 10).apply() },
+                "10-day streak to yesterday" to { val t = todayDn(); logDays((1L..10L).map { t - it }, "Streak through yesterday"); prefs.edit().putInt("streakSeen", 10).apply() },
+                "Log today only" to { logDays(listOf(todayDn()), "Logged today") },
+            )
+            Btns(
+                "Delete last 2 days" to { confirm = "Delete every record from yesterday and today?" to { store.deleteRecsSince(fromDn(todayDn() - 1)) } },
+            )
+        }
+        DevCard("Themes", "Tap to switch. Everything should change color. Current: " + MwTheme.palette.name) {
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PALETTES.forEach { p ->
+                    Column(Modifier.clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.07f)).clickableNoRipple { store.updateSettings(mapOf("palette" to JsonPrimitive(p.id))) }.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(Modifier.width(70.dp).clip(RoundedCornerShape(8.dp))) {
+                            listOf(p.c1, p.c2, p.c3).forEach { c -> Box(Modifier.weight(1f).size(10.dp, 22.dp).background(c)) }
+                        }
+                        Text(p.name, maxLines = 1, style = TextStyle(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold))
+                    }
+                }
+            }
+            Btns("Open theme picker" to { onOpen("display") })
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("Bg" to MW.Bg, "Accent" to MW.Accent, "Mint" to MW.Mint, "Tint" to MW.Tint, "On accent" to MW.OnAccent).forEach { (n, c) ->
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(Modifier.size(40.dp, 28.dp).clip(RoundedCornerShape(8.dp)).background(c))
+                        Text(n, style = TextStyle(color = MW.Faint, fontSize = 10.sp))
+                    }
+                }
+            }
+        }
+        DevCard("Debts and bills", "Part payments, overdue and paid bills, to check the Bills and Debts screens.") {
+            Btns(
+                "+ part-paid debt (they owe)" to {
+                    val t = todayStr()
+                    store.appendLists(mapOf("debts" to listOf(buildJsonObject {
+                        put("id", store.newId() + "p1"); put("who", "Ana"); put("amount", 300.0); put("theyOweMe", true); put("date", t); put("due", fromDn(todayDn() + 5)); put("note", "Concert ticket"); put("paid", false)
+                        put("pays", JsonArray(listOf(buildJsonObject { put("date", t); put("amount", 250.0) })))
+                    })))
+                    dt(ctx, "Ana owes you 50 of 300")
+                },
+                "+ part-paid debt (you owe)" to {
+                    val t = todayStr()
+                    store.appendLists(mapOf("debts" to listOf(buildJsonObject {
+                        put("id", store.newId() + "p2"); put("who", "Ben"); put("amount", 1000.0); put("theyOweMe", false); put("date", t); put("due", fromDn(todayDn() - 1)); put("note", "Borrowed"); put("paid", false)
+                        put("pays", JsonArray(listOf(buildJsonObject { put("date", t); put("amount", 400.0) }, buildJsonObject { put("date", t); put("amount", 100.0) })))
+                    })))
+                    dt(ctx, "You owe Ben 500 of 1000 (overdue)")
+                },
+                "+ settled debt" to {
+                    store.appendLists(mapOf("debts" to listOf(buildJsonObject {
+                        put("id", store.newId() + "p3"); put("who", "Cara"); put("amount", 150.0); put("theyOweMe", true); put("date", todayStr()); put("due", ""); put("note", "Snacks"); put("paid", true)
+                        put("pays", JsonArray(listOf(buildJsonObject { put("date", todayStr()); put("amount", 150.0) })))
+                    })))
+                },
+            )
+            val acct = s.accounts.firstOrNull { !it.ignored }?.id ?: ""
+            val cat = s.cats.firstOrNull { it.type == "expense" && !it.ignored }?.id ?: ""
+            fun bill(name: String, amt: Double, day: Int, paid: List<String>) = buildJsonObject {
+                put("id", store.newId() + name.length); put("name", name); put("amount", amt); put("day", day); put("cat", cat); put("acct", acct); put("paid", JsonArray(paid.map { JsonPrimitive(it) }))
+            }
+            Btns(
+                "+ bill due in 2 days" to { store.appendLists(mapOf("bills" to listOf(bill("Internet", 999.0, com.example.mywallet.data.civilFromDays(todayDn() + 2).third.toInt(), emptyList())))) },
+                "+ overdue bill" to { store.appendLists(mapOf("bills" to listOf(bill("Water", 350.0, com.example.mywallet.data.civilFromDays(todayDn() - 3).third.toInt(), emptyList())))) },
+                "+ paid this month" to { store.appendLists(mapOf("bills" to listOf(bill("Gym", 500.0, 1, listOf(todayStr().take(7)))))) },
+                "Clear bills" to { confirm = "Delete all bills?" to { store.setList("bills", emptyList()) } },
+            )
+        }
+        DevCard("Category guess", "Type a note (or a #tag) to see which category the app would pick.") {
+            FText("Note", guessNote, { guessNote = it.take(120) }, "e.g. lunch, #food, grab")
+            FChips("", listOf(opt("expense", "Expense"), opt("income", "Income")), guessType, { guessType = it }, scroll = false)
+            val g = if (guessNote.isBlank()) null else s.guessCat(guessNote, guessType)
+            val c = g?.let { id -> s.cats.firstOrNull { it.id == id } }
+            Text(if (guessNote.isBlank()) "Waiting for a note" else if (c == null) "No guess (category stays empty)" else "Picks: " + c.icon + " " + c.name, style = TextStyle(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
+        }
+        DevCard("State") {
+            val w = remember(s.rev, s.recs.size, shift, dbg) { s.streakWarn() }
+            Text(
+                "Today: " + todayStr() + "\nStreak: " + s.streak() + " (best " + s.bestStreak() + ")\n" +
+                    "Missed-day warning: " + (if (w == null) "none" else if (w.missedYesterday) "missed yesterday, free day used" else "free day already used") + "\n" +
+                    "Saved streak for 'ended': " + prefs.getInt("streakSeen", 0) + "\nLast warning day: " + prefs.getLong("warnDay", -1L) + "\nTheme: " + s.settings.palette + (if (s.settings.palette == "custom") " " + s.settings.pal else ""),
+                style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
+            )
         }
         DevCard("Level preview", "You have ${s.xp()} records. Type a number of records to see its level.") {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
@@ -183,7 +311,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
                 },
             )
             Btns(
-                "Open Rewind" to { onOpen("recap") }, "Open Year in review" to { onOpen("year") }, "Open Badges" to { onOpen("badges") }, "Open Streak" to { onOpen("streak") },
+                "Open Bills" to { onOpen("bills") }, "Open Debts" to { onOpen("debts") }, "Open Display" to { onOpen("display") }, "Open Rewind" to { onOpen("recap") }, "Open Year in review" to { onOpen("year") }, "Open Badges" to { onOpen("badges") }, "Open Streak" to { onOpen("streak") },
             )
             val rm = remember(s.rev) { GentleReminders.message(s) }
             Text("Reminder preview: " + rm.first + " — " + rm.second, style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))

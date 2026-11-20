@@ -151,7 +151,7 @@ fun MenuScreen(s: AppState, store: Store, scroll: androidx.compose.foundation.Sc
             val li = s.levelInfo()
             val prog = li.progress
             Column(
-                Modifier.fillMaxWidth().glass(RoundedCornerShape(30.dp), tint = Color(0xFF16A37F)).clickable { rename = true }.padding(horizontal = 20.dp, vertical = 18.dp),
+                Modifier.fillMaxWidth().glass(RoundedCornerShape(30.dp), tint = MW.Tint).clickable { rename = true }.padding(horizontal = 20.dp, vertical = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -191,7 +191,7 @@ fun MenuScreen(s: AppState, store: Store, scroll: androidx.compose.foundation.Sc
                     }
                 }
             }
-            val green = Color(0xFF2DD4A7); val sky = Color(0xFF9CC4FF); val amber = Color(0xFFFFCB7A); val violet = Color(0xFFB9A6FF); val rose = Color(0xFFFF9FB0)
+            val green = MW.Accent; val sky = Color(0xFF9CC4FF); val amber = Color(0xFFFFCB7A); val violet = Color(0xFFB9A6FF); val rose = Color(0xFFFF9FB0)
             Section("Plan", listOf(
                 MT("receipt", "Bills") { onOpen("bills") }, MT("swap", "Debts") { onOpen("debts") },
                 MT("target", "Goals") { onOpen("goals") }, MT("wallet", "Budgets") { onOpen("budgets") },
@@ -241,7 +241,7 @@ fun MenuScreen(s: AppState, store: Store, scroll: androidx.compose.foundation.Sc
                     }
                     Box(Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(24.dp)).background(MW.Accent).clickable {
                         store.updateSettings(mapOf("name" to JsonPrimitive(text.trim()), "nameAsked" to JsonPrimitive(true))); rename = false
-                    }, contentAlignment = Alignment.Center) { Text("Save", style = TextStyle(color = Color(0xFF04130F), fontWeight = FontWeight.ExtraBold)) }
+                    }, contentAlignment = Alignment.Center) { Text("Save", style = TextStyle(color = MW.OnAccent, fontWeight = FontWeight.ExtraBold)) }
                 }
             }
         }
@@ -255,11 +255,15 @@ fun SearchScreen(s: AppState, store: Store, receiptsOnly: Boolean, onEdit: (Rec)
     BackHandler { onClose() }
     var q by remember { mutableStateOf(com.example.mywallet.LaunchBus.query ?: "") }
     androidx.compose.runtime.LaunchedEffect(Unit) { com.example.mywallet.LaunchBus.query = null }
+    var range by remember { mutableStateOf(com.example.mywallet.LaunchBus.range ?: "all") }
+    androidx.compose.runtime.LaunchedEffect(Unit) { com.example.mywallet.LaunchBus.range = null }
     var filter by remember { mutableStateOf(if (receiptsOnly) "receipt" else "all") }
     val query = q.trim().lowercase()
 
-    val results = remember(s, query, filter) {
+    val results = remember(s, query, filter, range) {
+        val today = com.example.mywallet.data.todayStr()
         s.recs.filter { r ->
+            (range == "all" || (range == "today" && r.date == today) || (range == "earlier" && r.date < today)) &&
             (filter == "all" || filter == r.type || (filter == "receipt" && store.hasPhoto(r.id))) &&
                 (query.isEmpty() || r.note.lowercase().contains(query) || (s.cat(r.cat)?.name ?: "").lowercase().contains(query) ||
                     (s.acc(r.acct)?.name ?: "").lowercase().contains(query) || r.amount.toString().contains(query) || r.date.contains(query))
@@ -282,6 +286,19 @@ fun SearchScreen(s: AppState, store: Store, receiptsOnly: Boolean, onEdit: (Rec)
                 if (q.isNotEmpty()) Box(Modifier.padding(start = 8.dp).clickable { q = "" }) { MwIcon("close", MW.Dim, 18.dp) }
             }
             Spacer(Modifier.height(12.dp))
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("all" to "Any date", "today" to "Today", "earlier" to "Earlier").forEach { (k, n) ->
+                    val on = range == k
+                    Box(
+                        Modifier.height(36.dp).clip(RoundedCornerShape(18.dp))
+                            .background(if (on) MW.Accent.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.08f))
+                            .border(1.dp, if (on) MW.Accent else Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                            .clickable { range = k }.padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) { Text(n, style = TextStyle(color = if (on) MW.Mint else Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)) }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("all" to "All", "expense" to "Expenses", "income" to "Income", "transfer" to "Transfers", "check" to "Balance", "receipt" to "Receipts").forEach { (k, n) ->
                     val on = filter == k

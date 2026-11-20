@@ -28,9 +28,12 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
 object MW {
-    val Bg = Color(0xFF060912)
-    val Accent = Color(0xFF2DD4A7)
-    val Mint = Color(0xFF7DF0CF)
+    val Bg: Color get() = MwTheme.bg
+    val Accent: Color get() = MwTheme.accent
+    val Mint: Color get() = MwTheme.mint
+    /** text and icons that sit on an accent-coloured button */
+    val OnAccent: Color get() = MwTheme.onAccent
+    val Tint: Color get() = MwTheme.tint
     val Rose = Color(0xFFFF9FB0)
     val Amber = Color(0xFFFFCB7A)
     val Sky = Color(0xFF9CC4FF)
@@ -60,7 +63,7 @@ fun Modifier.glass(shape: Shape = RoundedCornerShape(24.dp), tint: Color? = null
     return this
         .clip(shape)
         .frost()
-        .background(Color(0xFF060912).copy(alpha = 0.22f))
+        .background(MW.Bg.copy(alpha = 0.22f))
         .background(Brush.linearGradient(listOf(top, Color.White.copy(alpha = 0.05f))))
         .border(1.dp, Color.White.copy(alpha = 0.17f), shape)
 }

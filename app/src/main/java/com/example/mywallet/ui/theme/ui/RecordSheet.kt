@@ -83,6 +83,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mywallet.data.AppState
+import com.example.mywallet.data.guessCat
 import com.example.mywallet.data.Rec
 import com.example.mywallet.data.Store
 import com.example.mywallet.data.alertsFor
@@ -166,7 +167,7 @@ private suspend fun photoToDataUrl(ctx: android.content.Context, uri: Uri): Stri
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         cr.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
         var sample = 1
-        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 2600) sample *= 2
+        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 4400) sample *= 2
         var bmp = cr.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) } ?: return@withContext null
         val rot = try {
             cr.openInputStream(uri)?.use {
@@ -175,13 +176,14 @@ private suspend fun photoToDataUrl(ctx: android.content.Context, uri: Uri): Stri
                 }
             } ?: 0f
         } catch (e: Exception) { 0f }
-        val k = 1280f / maxOf(bmp.width, bmp.height)
+        // keep enough detail for the text to stay readable (a tall phone screenshot is shrunk much less than a camera photo)
+        val k = 2200f / maxOf(bmp.width, bmp.height)
         val m = Matrix()
         if (k < 1f) m.postScale(k, k)
         if (rot != 0f) m.postRotate(rot)
         if (!m.isIdentity) bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
         val out = ByteArrayOutputStream()
-        bmp.compress(Bitmap.CompressFormat.JPEG, 72, out)
+        bmp.compress(Bitmap.CompressFormat.JPEG, 80, out)
         "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
     } catch (e: Exception) { null }
 }
@@ -262,8 +264,18 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
     var to by remember { mutableStateOf(edit?.to?.takeIf { it.isNotEmpty() } ?: accts.firstOrNull { it.id != acct }?.id ?: "") }
     var cat by remember { mutableStateOf(edit?.cat ?: "") }
     var note by remember { mutableStateOf(edit?.note ?: "") }
+    var autoCat by remember { mutableStateOf(false) }
     var day by remember { mutableStateOf(edit?.let { dn(it.date) } ?: todayDn()) }
     var askDelete by remember { mutableStateOf(false) }
+    fun applyNote(v: String) {
+        note = v.take(120)
+        if (type == "expense" || type == "income") {
+            if (cat.isEmpty() || autoCat) {
+                val g = s.guessCat(note, type)
+                if (g != null) { cat = g; autoCat = true } else if (autoCat) { cat = ""; autoCat = false }
+            }
+        }
+    }
     var toAmtText by remember { mutableStateOf(edit?.toAmount?.let { trimNum(it) } ?: "") }
     var photo by remember { mutableStateOf(edit?.let { store.photoOf(it.id) } ?: "") }
     val photo0 = remember { photo }
@@ -422,7 +434,7 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                         Modifier.weight(1f).height(40.dp).clip(RoundedCornerShape(14.dp))
                             .background(if (on) c.copy(alpha = 0.26f) else Color.Transparent)
                             .border(1.dp, if (on) c.copy(alpha = 0.7f) else Color.Transparent, RoundedCornerShape(14.dp))
-                            .clickable { type = k; if (s.cats.none { it.id == cat && it.type == k }) cat = "" },
+                            .clickable { type = k; if (s.cats.none { it.id == cat && it.type == k }) { cat = ""; autoCat = false }; if (cat.isEmpty() && note.isNotBlank() && (k == "expense" || k == "income")) s.guessCat(note, k)?.let { cat = it; autoCat = true } },
                         contentAlignment = Alignment.Center,
                     ) { Text(n, style = TextStyle(color = if (on) c else Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold)) }
                 }
@@ -467,7 +479,7 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
             // note: always visible, full width
             Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
                 BasicTextField(
-                    note, { note = it.take(120) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                    note, { applyNote(it) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                     textStyle = TextStyle(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(col),
                     decorationBox = { inner -> Box { if (note.isEmpty()) Text("Add a note or #tag", style = TextStyle(color = Color.White.copy(alpha = 0.4f), fontSize = 15.sp)); inner() } },
                 )
@@ -500,11 +512,11 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                     }
                 }
             } else if (type == "expense" || type == "income") {
-                Lbl("Category")
+                Lbl(if (autoCat && cat.isNotEmpty()) "Category  \u2728 picked for you" else "Category")
                 val tiles = listOf<com.example.mywallet.data.Cat?>(null) + cats
                 EqualGrid(tiles, 4) { m, c ->
-                    if (c == null) CatTile(m, "None", "-", cat.isEmpty(), col) { cat = "" }
-                    else CatTile(m, c.name, c.icon, cat == c.id, col) { cat = c.id }
+                    if (c == null) CatTile(m, "None", "-", cat.isEmpty(), col) { cat = ""; autoCat = false }
+                    else CatTile(m, c.name, c.icon, cat == c.id, col) { cat = c.id; autoCat = false }
                 }
             }
 
@@ -529,9 +541,11 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                         scanning = false
                         if (r?.total != null) {
                             amountText = trimNum(r.total)
-                            if (note.isBlank() && r.merchant != null) note = r.merchant
+                            if (note.isBlank() && r.merchant != null) applyNote(r.merchant)
                             toast("Found " + trimNum(r.total) + ". Please check it.")
-                        } else toast("Could not read a total. Try a clearer photo.")
+                        } else if (r == null) toast("The scanner could not open this picture. Try choosing it again.")
+                        else if (!r.hadText) toast("No text found in this picture. Try a sharper or closer photo.")
+                        else toast("Read the text but found no total. Type the amount in.")
                     }
                 }
             }
@@ -552,7 +566,7 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
             ) {
                 Text(
                     if (edit != null) "Save changes" else when (type) { "income" -> "Add income"; "transfer" -> "Move money"; "check" -> "Save balance"; else -> "Add expense" },
-                    style = TextStyle(color = Color(0xFF04130F), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold),
+                    style = TextStyle(color = MW.OnAccent, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold),
                 )
             }
             if (edit != null) {

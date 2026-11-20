@@ -307,6 +307,30 @@ private fun AppState.streakRaw(): Int {
     return c
 }
 
+/** what to warn about on the Today page (null = nothing) */
+class StreakWarn(val streak: Int, val missedYesterday: Boolean, val freeLeft: Boolean)
+
+fun AppState.streakWarn(): StreakWarn? {
+    val ds = loggedDays()
+    val t = todayDn()
+    if (ds.contains(t)) return null
+    val st = streak()
+    if (st <= 0) return null
+    fun wk(x: Long) = floor((x + 3) / 7.0).toLong()
+    var d = t - 1
+    var guard = 0
+    val used = HashSet<Long>()
+    while (guard++ < 4000) {
+        if (ds.contains(d)) { d--; continue }
+        if (ds.contains(d - 1) && !used.contains(wk(d))) { used.add(wk(d)); d--; continue }
+        break
+    }
+    val missedY = !ds.contains(t - 1)
+    val freeLeft = !used.contains(wk(t))
+    if (!missedY && freeLeft) return null
+    return StreakWarn(st, missedY, freeLeft)
+}
+
 /** longest streak ever, with the same one-free-day-a-week rule */
 fun AppState.bestStreak(): Int = memo().best
 
@@ -410,6 +434,63 @@ fun AppState.earnedBadges(): Set<String> {
     if (payCfg().mode != "off") e.add("planner")
     if (accounts.any { a -> a.kind == "bank" && !a.ignored && a.bank != null && (bankCalc(a)?.verdict == "ok" || bankCalc(a)?.verdict == "locked") }) e.add("bank")
     return e
+}
+
+/* ---------- smart category guess (note or #tag -> category) ---------- */
+private val KEYWORDS = mapOf(
+    "transport" to listOf("grab", "jeep", "tricycle", "trike", "bus", "mrt", "lrt", "fare", "angkas", "taxi", "gas", "fuel", "joyride", "van"),
+    "food" to listOf("jollibee", "mcdo", "mcdonald", "kfc", "lunch", "dinner", "breakfast", "snack", "milk tea", "milktea", "coffee", "food", "rice", "ulam", "canteen", "chowking", "mang inasal", "starbucks", "pizza", "burger", "bread"),
+    "phone & data" to listOf("load", "data", "promo", "wifi", "phone", "sim", "gomo", "giga"),
+    "load & data" to listOf("load", "data", "promo", "wifi"),
+    "bills" to listOf("boarding", "rent", "water bill", "electric", "kuryente", "internet", "bill"),
+    "school" to listOf("notebook", "pen", "book", "print", "xerox", "school", "project", "uniform", "tuition", "exam", "ballpen"),
+    "shopping" to listOf("shopee", "lazada", "clothes", "shirt", "shoes", "mall", "bag"),
+    "health" to listOf("medicine", "clinic", "vitamins", "doctor", "pharmacy", "mercury"),
+    "fun" to listOf("netflix", "spotify", "game", "movie", "cinema", "robux", "valorant", "mlbb", "diamonds", "concert"),
+)
+private val IN_KEYWORDS = mapOf(
+    "allowance" to listOf("allowance", "baon", "pocket money", "deposit"),
+    "salary" to listOf("salary", "sweldo", "wage", "part time", "freelance"),
+    "gift" to listOf("gift", "regalo", "aguinaldo", "lola", "lolo", "birthday"),
+    "bank interest" to listOf("interest"),
+)
+
+/** picks a category id for a note: a #tag named like a category, a note you used before, words you used before, then common words */
+fun AppState.guessCat(note: String, type: String): String? {
+    val n = note.trim().lowercase()
+    if (n.length < 2) return null
+    val ok = cats.filter { it.type == type && !it.ignored }
+    val okIds = ok.map { it.id }.toSet()
+    // 1. a #tag that matches a category name, like #food or #phone
+    tagsOf(n).forEach { tg ->
+        val w = tg.removePrefix("#").replace('_', ' ').replace('-', ' ')
+        ok.firstOrNull { it.name.lowercase() == w }?.let { return it.id }
+        ok.firstOrNull { it.name.lowercase().startsWith(w) && w.length >= 3 }?.let { return it.id }
+    }
+    // 2. the same note used before
+    val same = HashMap<String, Int>()
+    recs.forEach { if (it.note.trim().lowercase() == n && it.cat in okIds) same[it.cat] = (same[it.cat] ?: 0) + 1 }
+    same.maxByOrNull { it.value }?.let { return it.key }
+    // 3. words and tags used before in the same category
+    val words = n.split(Regex("[^\\p{L}\\p{N}#]+")).filter { it.length >= 3 }
+    if (words.isNotEmpty()) {
+        val tally = HashMap<String, HashMap<String, Int>>()
+        recs.takeLast(800).forEach { r ->
+            if (r.type != type || r.cat !in okIds) return@forEach
+            val rw = r.note.lowercase().split(Regex("[^\\p{L}\\p{N}#]+"))
+            words.forEach { w -> if (w in rw) { val m = tally.getOrPut(w) { HashMap() }; m[r.cat] = (m[r.cat] ?: 0) + 1 } }
+        }
+        var best: String? = null; var bs = 0
+        tally.values.forEach { m ->
+            val tot = m.values.sum(); val top = m.maxByOrNull { it.value }!!
+            if (tot >= 2 && top.value.toDouble() / tot >= 0.7 && top.value > bs) { best = top.key; bs = top.value }
+        }
+        best?.let { return it }
+    }
+    // 4. common words
+    val table = if (type == "expense") KEYWORDS else IN_KEYWORDS
+    for ((name, ws) in table) if (ws.any { n.contains(it) }) ok.firstOrNull { it.name.lowercase() == name }?.let { return it.id }
+    return null
 }
 
 /* ---------- tags (#word in a note) ---------- */

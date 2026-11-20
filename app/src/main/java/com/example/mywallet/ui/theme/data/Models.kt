@@ -157,6 +157,8 @@ object LI : KSerializer<Int> {
     val pay: PayCfg? = null,
     val home: kotlinx.serialization.json.JsonObject? = null,
     val alerts: Boolean = true,
+    val palette: String = "default",
+    val pal: String = "",
 )
 
 @Serializable data class AppState(

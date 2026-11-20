@@ -55,6 +55,7 @@ class NativeActivity : androidx.fragment.app.FragmentActivity() {
         locked = store.lockOn()
         if (store.settingStr("secure") == "true") window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         if (store.state != null) GentleReminders.ensure(applicationContext)
+        store.state?.let { com.example.mywallet.ui.MwTheme.apply(it.settings.palette, it.settings.pal) }
         setContent {
             val s = store.state
             androidx.compose.runtime.LaunchedEffect(LaunchBus.lockNow) { if (LaunchBus.lockNow) { LaunchBus.lockNow = false; if (store.lockOn()) locked = true } }
@@ -116,7 +117,7 @@ private fun ImportScreen(store: Store) {
                         .background(Brush.linearGradient(listOf(MW.Mint, MW.Accent)))
                         .clickable { pick.launch(arrayOf("application/json", "text/plain", "*/*")) },
                     contentAlignment = Alignment.Center,
-                ) { Text("Choose backup file", style = TextStyle(color = Color(0xFF04130F), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)) }
+                ) { Text("Choose backup file", style = TextStyle(color = MW.OnAccent, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)) }
                 Spacer(Modifier.height(12.dp))
                 com.example.mywallet.ui.GhostButton("Start fresh", Modifier.fillMaxWidth()) { store.startFresh() }
             }

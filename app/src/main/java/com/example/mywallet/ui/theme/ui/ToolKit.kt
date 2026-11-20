@@ -79,7 +79,7 @@ import java.util.TimeZone
 val EMO_CAT = listOf("🍜", "🍔", "🍕", "☕", "🧋", "🛒", "🚌", "🚗", "⛽", "✈️", "🧾", "🏠", "📱", "🛍️", "📚", "🎓", "💊", "🎮", "🎁", "🏦", "🪙", "💼", "💵", "🧩")
 val EMO_GOAL = listOf("💻", "📱", "✈️", "🏠", "🚗", "🎓", "🎁", "🎮", "💼", "🪙", "💵", "🏦", "📚", "☕", "🛒", "🎯")
 val EMO_ACCT = listOf("💵", "👛", "💳", "🏦", "🪙", "💰", "📱", "🏠", "🚗", "💼", "🎓", "🎯")
-val GOAL_COL = listOf(Color(0xFF2DD4A7), Color(0xFF7BB8FF), Color(0xFFFFCB7A), Color(0xFFB9A6FF), Color(0xFFFF9FB0), Color(0xFF8CFFC0), Color(0xFFFF8A5A), Color(0xFF6EE7F9))
+val GOAL_COL: List<Color> get() = listOf(MW.Accent, Color(0xFF7BB8FF), Color(0xFFFFCB7A), Color(0xFFB9A6FF), Color(0xFFFF9FB0), Color(0xFF8CFFC0), Color(0xFFFF8A5A), Color(0xFF6EE7F9))
 
 fun fmtDate(date: String): String {
     if (date.isEmpty()) return ""
@@ -101,8 +101,8 @@ fun ToolShell(title: String, onClose: () -> Unit, actionLabel: String? = null, o
                     Text(title, Modifier.weight(1f), textAlign = TextAlign.Center, style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
                     if (actionLabel != null) {
                         Row(Modifier.height(40.dp).clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))).clickable { onAction() }.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                            MwIcon("plus", Color(0xFF04130F), 16.dp, weight = 2.2f); Spacer(Modifier.width(4.dp))
-                            Text(actionLabel, style = TextStyle(color = Color(0xFF04130F), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+                            MwIcon("plus", MW.OnAccent, 16.dp, weight = 2.2f); Spacer(Modifier.width(4.dp))
+                            Text(actionLabel, style = TextStyle(color = MW.OnAccent, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
                         }
                     } else Spacer(Modifier.size(40.dp))
                 }
@@ -241,7 +241,7 @@ fun FDate(label: String, value: String, onChange: (String) -> Unit, optional: Bo
 }
 
 @Composable
-fun BigButton(text: String, color: Color = MW.Accent, textColor: Color = Color(0xFF04130F), icon: String? = null, onClick: () -> Unit) {
+fun BigButton(text: String, color: Color = MW.Accent, textColor: Color = MW.OnAccent, icon: String? = null, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(27.dp)).background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.72f)))).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
