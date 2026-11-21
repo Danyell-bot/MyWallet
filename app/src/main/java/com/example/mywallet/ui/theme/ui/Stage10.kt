@@ -138,13 +138,13 @@ fun FxLayer() {
             exit = slideOutVertically(tween(300)) { -it } + fadeOut(tween(250)),
         ) {
             Row(
-                Modifier.statusBarsPadding().padding(top = 10.dp, start = 18.dp, end = 18.dp).clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xFF0E1426)).border(1.dp, MW.Accent.copy(alpha = 0.6f), RoundedCornerShape(26.dp)).padding(horizontal = 18.dp, vertical = 12.dp),
+                Modifier.statusBarsPadding().padding(top = 10.dp, start = 18.dp, end = 18.dp).clip(MwShape(26.dp))
+                    .background(Color(0xFF0E1426)).border(1.dp, MW.Accent.copy(alpha = 0.6f), MwShape(26.dp)).padding(horizontal = 18.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MwIcon("award", MW.Amber, 22.dp, weight = 2f)
                 Spacer(Modifier.width(10.dp))
-                Text(last, style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                Text(last, style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
             }
         }
     }
@@ -157,29 +157,29 @@ fun BadgesScreen(s: AppState, onClose: () -> Unit) {
     val li = s.levelInfo()
     val have = s.unlocked.toSet()
     ToolShell("Badges and level", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp), tint = MW.Tint).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(28.dp), tint = MW.Tint).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(64.dp).clip(CircleShape).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))), contentAlignment = Alignment.Center) {
-                    Text(li.level.toString(), style = TextStyle(color = MW.OnAccent, fontSize = if (li.level > 99) 22.sp else 28.sp, fontWeight = FontWeight.Black))
+                Box(Modifier.size(64.dp).clip(MwCircle).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))), contentAlignment = Alignment.Center) {
+                    Text(li.level.toString(), style = MwTs(color = MW.OnAccent, fontSize = if (li.level > 99) 22.sp else 28.sp, fontWeight = FontWeight.Black))
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Lbl("Level " + li.level)
-                    Text(li.title, style = TextStyle(color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold))
+                    Text(li.title, style = MwTs(color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold))
                 }
             }
             var go by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) { go = true }
             val p by animateFloatAsState(if (go) li.progress else 0f, tween(900, easing = FastOutSlowInEasing), label = "lv")
-            Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.16f))) {
-                Box(Modifier.fillMaxWidth(p.coerceAtLeast(0.01f)).height(8.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(MW.Accent, MW.Mint))))
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.16f))) {
+                Box(Modifier.fillMaxWidth(p.coerceAtLeast(0.01f)).height(8.dp).clip(MwCircle).background(Brush.horizontalGradient(listOf(MW.Accent, MW.Mint))))
             }
             Text(
                 "${li.left} more record" + (if (li.left == 1) "" else "s") + " to level ${li.level + 1}." +
                     (if (li.nextTitle != null) " Next title: ${li.nextTitle} at level ${li.nextTitleLevel}." else " You hold the top title."),
-                style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 18.sp),
+                style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 18.sp),
             )
-            Text("Every record you log earns a point. Levels never end, so you can keep climbing.", style = TextStyle(color = MW.Faint, fontSize = 12.sp, lineHeight = 17.sp))
+            Text("Every record you log earns a point. Levels never end, so you can keep climbing.", style = MwTs(color = MW.Faint, fontSize = 12.sp, lineHeight = 17.sp))
         }
         Lbl("Badges  " + have.size + " of " + BADGES.size, Modifier.padding(top = 10.dp))
         BADGES.chunked(2).forEach { row ->
@@ -187,16 +187,16 @@ fun BadgesScreen(s: AppState, onClose: () -> Unit) {
                 row.forEach { b ->
                     val on = have.contains(b.id)
                     Column(
-                        Modifier.weight(1f).height(142.dp).glassLite(RoundedCornerShape(24.dp), tint = if (on) MW.Tint else null).padding(14.dp),
+                        Modifier.weight(1f).height(142.dp).glassLite(MwShape(24.dp), tint = if (on) MW.Tint else null).padding(14.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Box(
-                            Modifier.size(44.dp).clip(RoundedCornerShape(15.dp)).background(if (on) Brush.linearGradient(listOf(MW.Amber, Color(0xFFFF8A5A))) else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.1f), Color.White.copy(alpha = 0.05f)))),
+                            Modifier.size(44.dp).clip(MwShape(15.dp)).background(if (on) Brush.linearGradient(listOf(MW.Amber, Color(0xFFFF8A5A))) else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.1f), Color.White.copy(alpha = 0.05f)))),
                             contentAlignment = Alignment.Center,
                         ) { MwIcon(if (on) b.icon else "lock", if (on) Color(0xFF2A1400) else Color.White.copy(alpha = 0.45f), 24.dp, weight = 2f) }
                         Column {
-                            Text(b.name, maxLines = 1, style = TextStyle(color = if (on) Color.White else Color.White.copy(alpha = 0.6f), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
-                            Text(b.desc, maxLines = 3, overflow = TextOverflow.Ellipsis, style = TextStyle(color = if (on) MW.Dim else MW.Faint, fontSize = 11.5.sp, lineHeight = 15.sp))
+                            Text(b.name, maxLines = 1, style = MwTs(color = if (on) Color.White else Color.White.copy(alpha = 0.6f), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
+                            Text(b.desc, maxLines = 3, overflow = TextOverflow.Ellipsis, style = MwTs(color = if (on) MW.Dim else MW.Faint, fontSize = 11.5.sp, lineHeight = 15.sp))
                         }
                     }
                 }
@@ -228,9 +228,9 @@ fun TagsScreen(s: AppState, onSearch: (String) -> Unit, onClose: () -> Unit) {
         if (list.isEmpty()) EmptyCard("tag", "No tags yet.\nAdd a tag to a note, like \"Notebook #school\", and see what each tag costs you.")
         list.forEach { (t, o) ->
             ItemRow("#", t.removePrefix("#"), o[0].toInt().toString() + " record" + (if (o[0].toInt() == 1) "" else "s"), MW.Dim, MW.Violet,
-                trailing = { Text(s.money(o[1]), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")) }) { onSearch(t) }
+                trailing = { Text(s.money(o[1]), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")) }) { onSearch(t) }
         }
-        if (list.isNotEmpty()) Text("Tap a tag to see its records.", style = TextStyle(color = MW.Faint, fontSize = 12.sp), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        if (list.isNotEmpty()) Text("Tap a tag to see its records.", style = MwTs(color = MW.Faint, fontSize = 12.sp), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
     }
 }
 
@@ -245,10 +245,10 @@ fun ChallengeScreen(s: AppState, store: Store, onClose: () -> Unit) {
     val ctx = LocalContext.current
     ToolShell("Savings challenge", onClose) {
         if (c == null) {
-            Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(Modifier.size(50.dp).clip(RoundedCornerShape(17.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon("coin", MW.Amber, 26.dp) }
-                Text("Save a little more each week", style = TextStyle(color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold))
-                Text("Week 1 you save a small amount. Each week you save a bit more. Tick each week off as you go. It is a fun way to build a habit.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+            Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.size(50.dp).clip(MwShape(17.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon("coin", MW.Amber, 26.dp) }
+                Text("Save a little more each week", style = MwTs(color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold))
+                Text("Week 1 you save a small amount. Each week you save a bit more. Tick each week off as you go. It is a fun way to build a habit.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
             }
             FText("First week amount", base, { base = it }, "10", decimal = true)
             FChips("Length", listOf(opt("52", "52 weeks"), opt("26", "26 weeks")), weeks, { weeks = it }, scroll = false)
@@ -271,7 +271,7 @@ fun ChallengeScreen(s: AppState, store: Store, onClose: () -> Unit) {
             val hide = s.settings.hide
             fun amt(v: Double) = if (hide) "•••" else s.money(v)
             val ap by animateFloatAsState(frac, tween(700, easing = FastOutSlowInEasing), label = "ring")
-            Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(92.dp), contentAlignment = Alignment.Center) {
                     Canvas(Modifier.size(92.dp)) {
                         val sw = 11.dp.toPx()
@@ -284,11 +284,11 @@ fun ChallengeScreen(s: AppState, store: Store, onClose: () -> Unit) {
                 Column {
                     Lbl("Saved so far")
                     Text(amt(saved), style = numStyle(26f))
-                    Text("of ${amt(total)} · Week $cur of $wk", style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
+                    Text("of ${amt(total)} · Week $cur of $wk", style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
                 }
             }
-            Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(20.dp)).padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("This week: save " + amt(cb * cur) + (if (done.contains(cur)) "  ✓ done" else ""), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+            Row(Modifier.fillMaxWidth().glass(MwShape(20.dp)).padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("This week: save " + amt(cb * cur) + (if (done.contains(cur)) "  ✓ done" else ""), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
             }
             (1..wk).chunked(4).forEach { row ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -296,8 +296,8 @@ fun ChallengeScreen(s: AppState, store: Store, onClose: () -> Unit) {
                         val on = done.contains(w)
                         val bg by animateColorAsState(if (on) MW.Accent.copy(alpha = 0.32f) else Color.White.copy(alpha = 0.07f), tween(250), label = "tile")
                         Column(
-                            Modifier.weight(1f).height(62.dp).clip(RoundedCornerShape(16.dp)).background(bg)
-                                .border(if (w == cur) 2.dp else 1.dp, if (w == cur) MW.Amber else if (on) MW.Accent else Color.White.copy(alpha = 0.12f), RoundedCornerShape(16.dp))
+                            Modifier.weight(1f).height(62.dp).clip(MwShape(16.dp)).background(bg)
+                                .border(if (w == cur) 2.dp else 1.dp, if (w == cur) MW.Amber else if (on) MW.Accent else Color.White.copy(alpha = 0.12f), MwShape(16.dp))
                                 .clickable {
                                     val nd = if (on) done - w else done + w
                                     store.setTopLive("challenge", JsonObject(c + ("done" to JsonArray(nd.sorted().map { JsonPrimitive(it) }))))
@@ -305,8 +305,8 @@ fun ChallengeScreen(s: AppState, store: Store, onClose: () -> Unit) {
                                 },
                             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                         ) {
-                            Text("Wk $w", style = TextStyle(color = if (on) MW.Mint else MW.Faint, fontSize = 10.5.sp, fontWeight = FontWeight.Bold))
-                            Text(if (hide) "••" else s.money(cb * w).let { t -> if (t.length > 8) t.substringBefore('.') else t }, maxLines = 1, style = TextStyle(color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
+                            Text("Wk $w", style = MwTs(color = if (on) MW.Mint else MW.Faint, fontSize = 10.5.sp, fontWeight = FontWeight.Bold))
+                            Text(if (hide) "••" else s.money(cb * w).let { t -> if (t.length > 8) t.substringBefore('.') else t }, maxLines = 1, style = MwTs(color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
                         }
                     }
                     repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
@@ -333,9 +333,9 @@ fun PaydayScreen(s: AppState, store: Store, onClose: () -> Unit) {
         store.updateSettings(mapOf("pay" to buildJsonObject { put("mode", m); put("d1", x); put("d2", y); put("wd", w.toIntOrNull() ?: 5) }))
     }
     ToolShell("Payday", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("When do you get paid?", style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
-            Text("MyWallet uses this to show how much you can spend each day until the next payday.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+        Column(Modifier.fillMaxWidth().glass(MwShape(24.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("When do you get paid?", style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+            Text("MyWallet uses this to show how much you can spend each day until the next payday.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
         }
         FChips("", listOf(opt("off", "Off"), opt("m1", "Monthly"), opt("m2", "Twice a month"), opt("w", "Weekly")), mode, { mode = it; apply(it, d1, d2, wd) })
         if (mode == "m1" || mode == "m2") FText(if (mode == "m2") "First payday (day of month)" else "Payday (day of month)", d1, { d1 = it.filter { c -> c.isDigit() }.take(2); apply(mode, d1, d2, wd) }, "1")
@@ -343,14 +343,14 @@ fun PaydayScreen(s: AppState, store: Store, onClose: () -> Unit) {
         if (mode == "w") FChips("Day of the week", listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").mapIndexed { i, n -> opt(i.toString(), n) }, wd, { wd = it; apply(mode, d1, d2, it) })
         val pd = s.payDates(todayDn())
         if (mode != "off" && pd != null) {
-            Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(20.dp), tint = MW.Accent).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().glass(MwShape(20.dp), tint = MW.Accent).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 MwIcon("calendar", MW.Mint, 22.dp)
                 Spacer(Modifier.width(12.dp))
                 val dl = pd.next - todayDn()
-                Text("Next payday: " + fmtDate(fromDn(pd.next)) + " · in $dl day" + (if (dl == 1L) "" else "s"), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                Text("Next payday: " + fmtDate(fromDn(pd.next)) + " · in $dl day" + (if (dl == 1L) "" else "s"), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
             }
         }
-        Text("Days like the 31st use the last day of shorter months.", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+        Text("Days like the 31st use the last day of shorter months.", style = MwTs(color = MW.Faint, fontSize = 12.sp))
     }
 }
 
@@ -398,11 +398,11 @@ fun YearScreen(s: AppState, onClose: () -> Unit) {
                     }
                     2 -> {
                         YKick("Top category"); Spacer(Modifier.height(18.dp))
-                        Box(Modifier.size(110.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(110.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
                             GlyphIcon(s.cat(topCat?.key ?: "")?.icon ?: "🏷", Color.White, (56 * (0.5f + 0.5f * k)).dp)
                         }
                         Spacer(Modifier.height(16.dp))
-                        Text(if (topCat == null) "No expenses yet" else (s.cat(topCat.key)?.name ?: "No category"), maxLines = 2, style = TextStyle(color = Color.White, fontSize = 40.sp, fontWeight = FontWeight.Black, lineHeight = 44.sp))
+                        Text(if (topCat == null) "No expenses yet" else (s.cat(topCat.key)?.name ?: "No category"), maxLines = 2, style = MwTs(color = Color.White, fontSize = 40.sp, fontWeight = FontWeight.Black, lineHeight = 44.sp))
                         if (topCat != null && spent > 0) YSub(s.money(topCat.value) + " (" + Math.round(topCat.value / spent * 100) + "%)")
                     }
                     3 -> {
@@ -414,7 +414,7 @@ fun YearScreen(s: AppState, onClose: () -> Unit) {
                     }
                     4 -> {
                         YKick("Busiest month"); Spacer(Modifier.height(8.dp))
-                        Text(if (bus == null) "—" else com.example.mywallet.ui.monthLabel(bus.key).substringBefore(" "), style = TextStyle(color = Color.White, fontSize = 56.sp, fontWeight = FontWeight.Black))
+                        Text(if (bus == null) "—" else com.example.mywallet.ui.monthLabel(bus.key).substringBefore(" "), style = MwTs(color = Color.White, fontSize = 56.sp, fontWeight = FontWeight.Black))
                         if (bus != null) YSub(s.money(bus.value) + " spent.")
                     }
                     else -> {
@@ -426,26 +426,26 @@ fun YearScreen(s: AppState, onClose: () -> Unit) {
             }
         }
         Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 18.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(42.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 22.dp, weight = 2f) }
+            Box(Modifier.size(42.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f)).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 22.dp, weight = 2f) }
             Spacer(Modifier.weight(1f))
-            Box(Modifier.size(42.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).clickable { year -= 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
-            Text(y, Modifier.padding(horizontal = 14.dp), style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
-            Box(Modifier.size(42.dp).clip(CircleShape).background(Color.White.copy(alpha = if (year < nowY) 0.2f else 0.06f)).clickable { if (year < nowY) year += 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
+            Box(Modifier.size(42.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f)).clickable { year -= 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
+            Text(y, Modifier.padding(horizontal = 14.dp), style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+            Box(Modifier.size(42.dp).clip(MwCircle).background(Color.White.copy(alpha = if (year < nowY) 0.2f else 0.06f)).clickable { if (year < nowY) year += 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
             Spacer(Modifier.weight(1f))
-            Box(Modifier.size(42.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f)).clickable {
+            Box(Modifier.size(42.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f)).clickable {
                 val text = "My $y in money: spent ${s.money(spent)}, money in ${s.money(inc)}" +
                     (if (topCat != null) ", top category ${s.cat(topCat.key)?.name ?: ""}" else "") + ", $n records logged, best streak $best days."
                 try { ctx.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "Share")) } catch (e: Exception) { }
             }, contentAlignment = Alignment.Center) { MwIcon("share", Color.White, 20.dp, weight = 2f) }
         }
         Row(Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 22.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            repeat(6) { i -> Box(Modifier.size(if (i == pager.currentPage) 22.dp else 7.dp, 7.dp).clip(CircleShape).background(Color.White.copy(alpha = if (i == pager.currentPage) 0.95f else 0.4f))) }
+            repeat(6) { i -> Box(Modifier.size(if (i == pager.currentPage) 22.dp else 7.dp, 7.dp).clip(MwCircle).background(Color.White.copy(alpha = if (i == pager.currentPage) 0.95f else 0.4f))) }
         }
     }
 }
 
 @Composable
-private fun YKick(t: String) = Text(t.uppercase(), style = TextStyle(color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp))
+private fun YKick(t: String) = Text(t.uppercase(), style = MwTs(color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp))
 
 @Composable
-private fun YSub(t: String) = Text(t, Modifier.padding(top = 12.dp), style = TextStyle(color = Color.White.copy(alpha = 0.92f), fontSize = 18.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold))
+private fun YSub(t: String) = Text(t, Modifier.padding(top = 12.dp), style = MwTs(color = Color.White.copy(alpha = 0.92f), fontSize = 18.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold))

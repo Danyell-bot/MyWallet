@@ -94,9 +94,9 @@ private fun toast(ctx: android.content.Context, m: String) = Toast.makeText(ctx,
 @Composable
 fun MonthNav(ym: String, onChange: (String) -> Unit, label: String = monthLabel(ym), step: Int = 1) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(42.dp).glass(CircleShape).clickable { onChange(ymAdd(ym, -step)) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
-        Text(label, Modifier.weight(1f), textAlign = TextAlign.Center, style = TextStyle(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
-        Box(Modifier.size(42.dp).glass(CircleShape).clickable { onChange(ymAdd(ym, step)) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
+        Box(Modifier.size(42.dp).glass(MwCircle).clickable { onChange(ymAdd(ym, -step)) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
+        Text(label, Modifier.weight(1f), textAlign = TextAlign.Center, style = MwTs(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
+        Box(Modifier.size(42.dp).glass(MwCircle).clickable { onChange(ymAdd(ym, step)) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
     }
 }
 
@@ -121,7 +121,7 @@ fun AnalysisScreen(s: AppState, onClose: () -> Unit) {
         FChips("", listOf(opt("m", "Month"), opt("y", "Year")), if (year) "y" else "m", { year = it == "y" }, scroll = false)
         FChips("", listOf(opt("expense", "Expenses"), opt("income", "Income")), type, { type = it }, scroll = false)
         FChips("", listOf(opt("d", "Donut"), opt("b", "Bars")), if (donut) "d" else "b", { donut = it == "d" }, scroll = false)
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp)).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(28.dp)).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             if (donut && list.isNotEmpty()) {
                 Box(Modifier.size(210.dp), contentAlignment = Alignment.Center) {
                     Canvas(Modifier.size(210.dp)) {
@@ -134,7 +134,7 @@ fun AnalysisScreen(s: AppState, onClose: () -> Unit) {
                         }
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(if (type == "expense") "SPENT" else "EARNED", style = TextStyle(color = MW.Dim, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp))
+                        Text(if (type == "expense") "SPENT" else "EARNED", style = MwTs(color = MW.Dim, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp))
                         Text(s.money(tot), style = numStyle(24f))
                     }
                 }
@@ -144,19 +144,19 @@ fun AnalysisScreen(s: AppState, onClose: () -> Unit) {
             }
         }
         if (list.isEmpty()) EmptyCard("pie", "Nothing here yet.\nAdd some " + (if (type == "expense") "expenses" else "income") + " and they show up as a breakdown.")
-        else Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        else Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             list.forEachIndexed { i, e ->
                 val c = s.cat(e.key)
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (donut) { Box(Modifier.size(10.dp).clip(CircleShape).background(PAL[i % 8])); Spacer(Modifier.width(8.dp)) }
+                        if (donut) { Box(Modifier.size(10.dp).clip(MwCircle).background(PAL[i % 8])); Spacer(Modifier.width(8.dp)) }
                         GlyphIcon(c?.icon ?: "•", Color.White, 18.dp); Spacer(Modifier.width(8.dp))
-                        Text(c?.name ?: "No category", Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
-                        Text("${Math.round(e.value / tot * 100)}%", style = TextStyle(color = MW.Dim, fontSize = 12.sp)); Spacer(Modifier.width(10.dp))
-                        Text(s.money(e.value), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
+                        Text(c?.name ?: "No category", Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
+                        Text("${Math.round(e.value / tot * 100)}%", style = MwTs(color = MW.Dim, fontSize = 12.sp)); Spacer(Modifier.width(10.dp))
+                        Text(s.money(e.value), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
                     }
-                    Box(Modifier.fillMaxWidth().height(7.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f))) {
-                        Box(Modifier.fillMaxWidth((e.value / list[0].value).toFloat().coerceIn(0.02f, 1f)).height(7.dp).clip(CircleShape).background(PAL[i % 8]))
+                    Box(Modifier.fillMaxWidth().height(7.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.1f))) {
+                        Box(Modifier.fillMaxWidth((e.value / list[0].value).toFloat().coerceIn(0.02f, 1f)).height(7.dp).clip(MwCircle).background(PAL[i % 8]))
                     }
                 }
             }
@@ -175,10 +175,10 @@ fun ColumnScope.TrendsBody(s: AppState) {
     var sel by remember { mutableStateOf(ms.lastIndex) }
     val mx = maxOf(1.0, (ex + inc).max()) * 1.12
     run {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(28.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) { Box(Modifier.size(10.dp).clip(CircleShape).background(MW.Rose)); Spacer(Modifier.width(6.dp)); Text("Expenses", style = TextStyle(color = MW.Dim, fontSize = 12.sp)) }
-                Row(verticalAlignment = Alignment.CenterVertically) { Box(Modifier.size(10.dp).clip(CircleShape).background(MW.Mint)); Spacer(Modifier.width(6.dp)); Text("Income", style = TextStyle(color = MW.Dim, fontSize = 12.sp)) }
+                Row(verticalAlignment = Alignment.CenterVertically) { Box(Modifier.size(10.dp).clip(MwCircle).background(MW.Rose)); Spacer(Modifier.width(6.dp)); Text("Expenses", style = MwTs(color = MW.Dim, fontSize = 12.sp)) }
+                Row(verticalAlignment = Alignment.CenterVertically) { Box(Modifier.size(10.dp).clip(MwCircle).background(MW.Mint)); Spacer(Modifier.width(6.dp)); Text("Income", style = MwTs(color = MW.Dim, fontSize = 12.sp)) }
             }
             Canvas(
                 Modifier.fillMaxWidth().height(200.dp).pointerInput(Unit) {
@@ -204,22 +204,22 @@ fun ColumnScope.TrendsBody(s: AppState) {
                 val paint = android.graphics.Paint().apply { color = android.graphics.Color.argb(170, 255, 255, 255); textSize = 11.sp.toPx(); textAlign = android.graphics.Paint.Align.CENTER; isAntiAlias = true }
                 ms.forEachIndexed { i, m -> drawContext.canvas.nativeCanvas.drawText(shortMon(m), x(i), size.height - 6.dp.toPx(), paint) }
             }
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(monthLabel(ms[sel]), Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
-                Text("In " + s.money(inc[sel]), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)); Spacer(Modifier.width(12.dp))
-                Text("Out " + s.money(ex[sel]), style = TextStyle(color = MW.Rose, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+            Row(Modifier.fillMaxWidth().clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(monthLabel(ms[sel]), Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                Text("In " + s.money(inc[sel]), style = MwTs(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)); Spacer(Modifier.width(12.dp))
+                Text("Out " + s.money(ex[sel]), style = MwTs(color = MW.Rose, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
             }
         }
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row { Text("Month", Modifier.weight(1f), style = TextStyle(color = MW.Dim, fontSize = 12.sp)); Text("Income", Modifier.width(100.dp), textAlign = TextAlign.End, style = TextStyle(color = MW.Dim, fontSize = 12.sp)); Text("Expense", Modifier.width(100.dp), textAlign = TextAlign.End, style = TextStyle(color = MW.Dim, fontSize = 12.sp)) }
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row { Text("Month", Modifier.weight(1f), style = MwTs(color = MW.Dim, fontSize = 12.sp)); Text("Income", Modifier.width(100.dp), textAlign = TextAlign.End, style = MwTs(color = MW.Dim, fontSize = 12.sp)); Text("Expense", Modifier.width(100.dp), textAlign = TextAlign.End, style = MwTs(color = MW.Dim, fontSize = 12.sp)) }
             ms.forEachIndexed { i, m ->
-                Row { Text(shortMon(m), Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 14.sp)); Text(s.money(inc[i]), Modifier.width(100.dp), textAlign = TextAlign.End, style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontFeatureSettings = "tnum")); Text(s.money(ex[i]), Modifier.width(100.dp), textAlign = TextAlign.End, style = TextStyle(color = Color.White, fontSize = 13.sp, fontFeatureSettings = "tnum")) }
+                Row { Text(shortMon(m), Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 14.sp)); Text(s.money(inc[i]), Modifier.width(100.dp), textAlign = TextAlign.End, style = MwTs(color = MW.Mint, fontSize = 13.sp, fontFeatureSettings = "tnum")); Text(s.money(ex[i]), Modifier.width(100.dp), textAlign = TextAlign.End, style = MwTs(color = Color.White, fontSize = 13.sp, fontFeatureSettings = "tnum")) }
             }
         }
         Lbl("Insights", Modifier.padding(top = 4.dp))
         val ins = insightsFor(s)
-        if (ins.isEmpty()) Text("Add a few more expenses to see insights.", style = TextStyle(color = MW.Dim, fontSize = 13.sp))
-        ins.forEach { t -> Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(22.dp), MW.Amber).padding(16.dp), verticalAlignment = Alignment.CenterVertically) { MwIcon("sparkles", MW.Amber, 20.dp); Spacer(Modifier.width(12.dp)); Text(highlightMoney(t, s.settings.cur, MW.Amber, Color.White), style = TextStyle(color = Color.White, fontSize = 14.sp, lineHeight = 20.sp)) } }
+        if (ins.isEmpty()) Text("Add a few more expenses to see insights.", style = MwTs(color = MW.Dim, fontSize = 13.sp))
+        ins.forEach { t -> Row(Modifier.fillMaxWidth().glass(MwShape(22.dp), MW.Amber).padding(16.dp), verticalAlignment = Alignment.CenterVertically) { MwIcon("sparkles", MW.Amber, 20.dp); Spacer(Modifier.width(12.dp)); Text(highlightMoney(t, s.settings.cur, MW.Amber, Color.White), style = MwTs(color = Color.White, fontSize = 14.sp, lineHeight = 20.sp)) } }
     }
 }
 
@@ -257,33 +257,33 @@ fun BudgetsScreen(s: AppState, store: Store, onClose: () -> Unit) {
         MonthNav(ym, { ym = it })
         val left = totB - totS
         val hot = if (left >= 0) MW.Mint else Color(0xFFFF8FA0)
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(28.dp), if (left >= 0) MW.Accent else Color(0xFFFF6B81)).padding(22.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(28.dp), if (left >= 0) MW.Accent else Color(0xFFFF6B81)).padding(22.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Lbl("Spent this month")
             Text(s.money(totS), style = numStyle(40f))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(12.dp)) { Text("Total budget", style = TextStyle(color = MW.Dim, fontSize = 11.sp)); Text(s.money(totB), style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")) }
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(hot.copy(alpha = 0.18f)).padding(12.dp)) { Text(if (left >= 0) "Left" else "Over by", style = TextStyle(color = hot, fontSize = 11.sp, fontWeight = FontWeight.Bold)); Text(s.money(Math.abs(left)), style = TextStyle(color = hot, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")) }
+                Column(Modifier.weight(1f).clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(12.dp)) { Text("Total budget", style = MwTs(color = MW.Dim, fontSize = 11.sp)); Text(s.money(totB), style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")) }
+                Column(Modifier.weight(1f).clip(MwShape(16.dp)).background(hot.copy(alpha = 0.18f)).padding(12.dp)) { Text(if (left >= 0) "Left" else "Over by", style = MwTs(color = hot, fontSize = 11.sp, fontWeight = FontWeight.Bold)); Text(s.money(Math.abs(left)), style = MwTs(color = hot, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")) }
             }
         }
         if (ids.isEmpty()) EmptyCard("wallet", "No budget in this month.\nSet a limit on a category, or copy last month's budgets.")
         ids.forEach { id ->
             val c = s.cat(id)!!; val lim = b[id] ?: 0.0; val sp = s.spentIn(ym, id); val pct = if (lim > 0) sp / lim else 0.0; val l = lim - sp
             val bc = if (pct > 1) Color(0xFFFF6B81) else if (pct >= 0.8) MW.Amber else MW.Accent
-            Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).clickable { editCat = id }.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.fillMaxWidth().glass(MwShape(24.dp)).clickable { editCat = id }.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(38.dp).clip(RoundedCornerShape(13.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { GlyphIcon(c.icon, Color.White, 20.dp) }
+                    Box(Modifier.size(38.dp).clip(MwShape(13.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { GlyphIcon(c.icon, Color.White, 20.dp) }
                     Spacer(Modifier.width(12.dp))
-                    Text(c.name, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
-                    Text(s.money(sp) + " / " + s.money(lim), style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, fontFeatureSettings = "tnum"))
+                    Text(c.name, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+                    Text(s.money(sp) + " / " + s.money(lim), style = MwTs(color = MW.Dim, fontSize = 12.5.sp, fontFeatureSettings = "tnum"))
                 }
-                Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.12f))) { Box(Modifier.fillMaxWidth(pct.toFloat().coerceIn(0f, 1f)).height(8.dp).clip(CircleShape).background(bc)) }
-                Text(if (l >= 0) s.money(l) + " left" else "Over by " + s.money(-l), style = TextStyle(color = if (l >= 0) MW.Dim else Color(0xFFFF8FA0), fontSize = 12.5.sp, fontWeight = if (l < 0) FontWeight.ExtraBold else FontWeight.Normal))
+                Box(Modifier.fillMaxWidth().height(8.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.12f))) { Box(Modifier.fillMaxWidth(pct.toFloat().coerceIn(0f, 1f)).height(8.dp).clip(MwCircle).background(bc)) }
+                Text(if (l >= 0) s.money(l) + " left" else "Over by " + s.money(-l), style = MwTs(color = if (l >= 0) MW.Dim else Color(0xFFFF8FA0), fontSize = 12.5.sp, fontWeight = if (l < 0) FontWeight.ExtraBold else FontWeight.Normal))
             }
         }
         GhostButton("Copy budgets from previous month", Modifier.fillMaxWidth(), icon = "repeat") {
             if (store.copyBudgets(ymAdd(ym, -1), ym)) toast(ctx, "Copied") else toast(ctx, "Previous month has no budget")
         }
-        Text("A budget is only a limit you watch. It never changes an account balance.", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+        Text("A budget is only a limit you watch. It never changes an account balance.", style = MwTs(color = MW.Faint, fontSize = 12.sp))
     }
     if (adding) BudgetForm(s, store, ym, null) { adding = false }
     editCat?.let { BudgetForm(s, store, ym, it) { editCat = null } }
@@ -297,7 +297,7 @@ private fun BudgetForm(s: AppState, store: Store, ym: String, edit: String?, onC
     var cat by remember { mutableStateOf(edit ?: avail.firstOrNull()?.id ?: "") }
     var limit by remember { mutableStateOf(edit?.let { (s.budgets[ym]?.get(it) ?: 0.0).let { v -> java.math.BigDecimal.valueOf(v).stripTrailingZeros().toPlainString() } } ?: "") }
     FormPanel(if (edit == null) "New budget" else "Edit budget", onClose) {
-        if (avail.isEmpty()) Text("Every category already has a budget this month.", style = TextStyle(color = MW.Dim, fontSize = 14.sp))
+        if (avail.isEmpty()) Text("Every category already has a budget this month.", style = MwTs(color = MW.Dim, fontSize = 14.sp))
         else {
             if (edit == null) FChips("Category", avail.map { opt(it.id, it.name, it.icon) }, cat, { cat = it })
             FText("Monthly limit", limit, { limit = it }, "0", decimal = true)
@@ -322,32 +322,32 @@ fun StreakScreen(s: AppState, onClose: () -> Unit) {
     val next = FLAME_DAYS.getOrNull(real + 1)
     val prev = FLAME_DAYS[real]
     ToolShell("Streak", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(32.dp), MW.Amber).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(32.dp), MW.Amber).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             FlameIcon(shown, 150.dp)
             Text("$st day" + if (st == 1) "" else "s", style = numStyle(40f))
-            Text(FLAME_NAMES[real] + " · Best: $best", style = TextStyle(color = MW.Dim, fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
-            if (st > 0 && !lit) Text("Log something today to keep your flame lit.", Modifier.padding(top = 6.dp), textAlign = TextAlign.Center, style = TextStyle(color = MW.Amber, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
+            Text(FLAME_NAMES[real] + " · Best: $best", style = MwTs(color = MW.Dim, fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
+            if (st > 0 && !lit) Text("Log something today to keep your flame lit.", Modifier.padding(top = 6.dp), textAlign = TextAlign.Center, style = MwTs(color = MW.Amber, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
             if (next != null) {
                 Spacer(Modifier.height(8.dp))
-                Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.14f))) {
-                    Box(Modifier.fillMaxWidth(((st - prev).toFloat() / (next - prev)).coerceIn(0f, 1f)).height(8.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(MW.Amber, MW.Rose))))
+                Box(Modifier.fillMaxWidth().height(8.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.14f))) {
+                    Box(Modifier.fillMaxWidth(((st - prev).toFloat() / (next - prev)).coerceIn(0f, 1f)).height(8.dp).clip(MwCircle).background(Brush.horizontalGradient(listOf(MW.Amber, MW.Rose))))
                 }
-                Text("${next - st} more day" + (if (next - st == 1) "" else "s") + " to ${FLAME_NAMES[real + 1]}", style = TextStyle(color = MW.Amber, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
-            } else Text("Top flame reached!", style = TextStyle(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
+                Text("${next - st} more day" + (if (next - st == 1) "" else "s") + " to ${FLAME_NAMES[real + 1]}", style = MwTs(color = MW.Amber, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+            } else Text("Top flame reached!", style = MwTs(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
         }
-        Text("Log at least one record a day to grow your streak. You get one free missed day each week.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+        Text("Log at least one record a day to grow your streak. You get one free missed day each week.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
         Lbl("Flame ladder", Modifier.padding(top = 4.dp))
         (1..16).toList().chunked(4).forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { t ->
                     val on = real >= t
-                    Column(Modifier.weight(1f).glass(RoundedCornerShape(20.dp), if (on) MW.Amber else null).padding(vertical = 12.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(Modifier.weight(1f).glass(MwShape(20.dp), if (on) MW.Amber else null).padding(vertical = 12.dp, horizontal = 2.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Box(contentAlignment = Alignment.Center) {
                             FlameIcon(t, 64.dp, locked = !on)
                             if (!on) MwIcon("lock", Color.White.copy(alpha = 0.55f), 24.dp, weight = 2f)
                         }
-                        Text(FLAME_NAMES[t].removeSuffix(" flame"), maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = if (on) Color.White else MW.Faint, fontSize = 11.5.sp, fontWeight = FontWeight.Bold))
-                        Text(FLAME_DAYS[t].toString() + "d", style = TextStyle(color = if (on) MW.Mint else MW.Dim, fontSize = 11.sp))
+                        Text(FLAME_NAMES[t].removeSuffix(" flame"), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = if (on) Color.White else MW.Faint, fontSize = 11.5.sp, fontWeight = FontWeight.Bold))
+                        Text(FLAME_DAYS[t].toString() + "d", style = MwTs(color = if (on) MW.Mint else MW.Dim, fontSize = 11.sp))
                     }
                 }
             }

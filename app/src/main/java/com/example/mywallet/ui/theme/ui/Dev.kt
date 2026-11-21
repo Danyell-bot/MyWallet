@@ -63,9 +63,9 @@ private fun dt(ctx: Context, m: String) = Toast.makeText(ctx, m, Toast.LENGTH_SH
 
 @Composable
 private fun DevCard(title: String, sub: String? = null, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(title, style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
-        if (sub != null) Text(sub, style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
+    Column(Modifier.fillMaxWidth().glass(MwShape(24.dp)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(title, style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
+        if (sub != null) Text(sub, style = MwTs(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
         content()
     }
 }
@@ -148,9 +148,9 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
         DevCard("Streak and flames", "Your real streak is ${s.streak()} days. Tap a flame to play its New Day moment.") {
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FLAME_DAYS.forEachIndexed { i, d ->
-                    Column(Modifier.clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.07f)).clickableNoRipple { onCelebrate(maxOf(0, d - 1), maxOf(1, d)) }.padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.07f)).clickableNoRipple { onCelebrate(maxOf(0, d - 1), maxOf(1, d)) }.padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         FlameIcon(i, 52.dp)
-                        Text(if (d == 0) "Cold" else d.toString() + "d", style = TextStyle(color = MW.Dim, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+                        Text(if (d == 0) "Cold" else d.toString() + "d", style = MwTs(color = MW.Dim, fontSize = 11.sp, fontWeight = FontWeight.Bold))
                     }
                 }
             }
@@ -188,23 +188,24 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
                 "Delete last 2 days" to { confirm = "Delete every record from yesterday and today?" to { store.deleteRecsSince(fromDn(todayDn() - 1)) } },
             )
         }
-        DevCard("Themes", "Tap to switch. Everything should change color. Current: " + MwTheme.palette.name) {
+        DevCard("Palettes", "Tap to switch. Everything should change color. Current: " + MwTheme.palette.name + " / theme: " + MwStyle.cur.name) {
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PALETTES.forEach { p ->
-                    Column(Modifier.clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.07f)).clickableNoRipple { store.updateSettings(mapOf("palette" to JsonPrimitive(p.id))) }.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(Modifier.width(70.dp).clip(RoundedCornerShape(8.dp))) {
+                    Column(Modifier.clip(MwShape(14.dp)).background(Color.White.copy(alpha = 0.07f)).clickableNoRipple { store.updateSettings(mapOf("palette" to JsonPrimitive(p.id))) }.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(Modifier.width(70.dp).clip(MwShape(8.dp))) {
                             listOf(p.c1, p.c2, p.c3).forEach { c -> Box(Modifier.weight(1f).size(10.dp, 22.dp).background(c)) }
                         }
-                        Text(p.name, maxLines = 1, style = TextStyle(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold))
+                        Text(p.name, maxLines = 1, style = MwTs(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold))
                     }
                 }
             }
-            Btns("Open theme picker" to { onOpen("display") })
+            Btns(*UI_STYLES.map { st -> st.name to { store.updateSettings(mapOf("uiTheme" to JsonPrimitive(st.id))) } }.toTypedArray())
+            Btns("Open display settings" to { onOpen("display") })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf("Bg" to MW.Bg, "Accent" to MW.Accent, "Mint" to MW.Mint, "Tint" to MW.Tint, "On accent" to MW.OnAccent).forEach { (n, c) ->
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(Modifier.size(40.dp, 28.dp).clip(RoundedCornerShape(8.dp)).background(c))
-                        Text(n, style = TextStyle(color = MW.Faint, fontSize = 10.sp))
+                        Box(Modifier.size(40.dp, 28.dp).clip(MwShape(8.dp)).background(c))
+                        Text(n, style = MwTs(color = MW.Faint, fontSize = 10.sp))
                     }
                 }
             }
@@ -251,7 +252,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
             FChips("", listOf(opt("expense", "Expense"), opt("income", "Income")), guessType, { guessType = it }, scroll = false)
             val g = if (guessNote.isBlank()) null else s.guessCat(guessNote, guessType)
             val c = g?.let { id -> s.cats.firstOrNull { it.id == id } }
-            Text(if (guessNote.isBlank()) "Waiting for a note" else if (c == null) "No guess (category stays empty)" else "Picks: " + c.icon + " " + c.name, style = TextStyle(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
+            Text(if (guessNote.isBlank()) "Waiting for a note" else if (c == null) "No guess (category stays empty)" else "Picks: " + c.icon + " " + c.name, style = MwTs(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
         }
         DevCard("State") {
             val w = remember(s.rev, s.recs.size, shift, dbg) { s.streakWarn() }
@@ -259,17 +260,17 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
                 "Today: " + todayStr() + "\nStreak: " + s.streak() + " (best " + s.bestStreak() + ")\n" +
                     "Missed-day warning: " + (if (w == null) "none" else if (w.missedYesterday) "missed yesterday, free day used" else "free day already used") + "\n" +
                     "Saved streak for 'ended': " + prefs.getInt("streakSeen", 0) + "\nLast warning day: " + prefs.getLong("warnDay", -1L) + "\nTheme: " + s.settings.palette + (if (s.settings.palette == "custom") " " + s.settings.pal else ""),
-                style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
+                style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
             )
         }
         DevCard("Level preview", "You have ${s.xp()} records. Type a number of records to see its level.") {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
                 FText("Records", lvXp, { lvXp = it.filter { c -> c.isDigit() }.take(6) }, "250", modifier = Modifier.weight(1f))
                 val li = levelInfoFor(lvXp.toIntOrNull() ?: s.xp())
-                Text("Level ${li.level}\n${li.title}", style = TextStyle(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold), modifier = Modifier.padding(bottom = 12.dp))
+                Text("Level ${li.level}\n${li.title}", style = MwTs(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold), modifier = Modifier.padding(bottom = 12.dp))
             }
             Btns(*listOf(0, 8, 50, 150, 500, 1000, 3000, 6000, 20000).map { v -> v.toString() to { lvXp = v.toString() } }.toTypedArray())
-            Text(LEVEL_TITLES.joinToString("\n") { (l, n) -> "Level $l  $n  (${xpForLevel(l)} records)" }, style = TextStyle(color = MW.Faint, fontSize = 12.sp, lineHeight = 17.sp))
+            Text(LEVEL_TITLES.joinToString("\n") { (l, n) -> "Level $l  $n  (${xpForLevel(l)} records)" }, style = MwTs(color = MW.Faint, fontSize = 12.sp, lineHeight = 17.sp))
         }
         DevCard("Sample data") {
             Btns("+30 records" to { addSamples(30) }, "+200 records" to { addSamples(200) }, "+3 debts" to {
@@ -314,7 +315,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
                 "Open Bills" to { onOpen("bills") }, "Open Debts" to { onOpen("debts") }, "Open Display" to { onOpen("display") }, "Open Rewind" to { onOpen("recap") }, "Open Year in review" to { onOpen("year") }, "Open Badges" to { onOpen("badges") }, "Open Streak" to { onOpen("streak") },
             )
             val rm = remember(s.rev) { GentleReminders.message(s) }
-            Text("Reminder preview: " + rm.first + " — " + rm.second, style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
+            Text("Reminder preview: " + rm.first + " — " + rm.second, style = MwTs(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
         }
         DevCard("UI elements", "Everything the app is built from, in one place.") {
             BigButton("Big button", icon = "plus") { dt(ctx, "Big button") }
@@ -324,7 +325,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
             }
             FChips("Chips", listOf(opt("a", "First"), opt("b", "Second"), opt("c", "Third")), chip, { chip = it })
             ToggleRow("Toggle row", "A switch with a short description.", demoOn) { demoOn = it }
-            ItemRow("🍜", "Item row", "With a subtitle and a trailing amount", trailing = { Text("₱120.00", style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }) { dt(ctx, "Row tapped") }
+            ItemRow("🍜", "Item row", "With a subtitle and a trailing amount", trailing = { Text("₱120.00", style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }) { dt(ctx, "Row tapped") }
             EmptyCard("sparkles", "An empty card looks like this.")
             Btns("Open bottom panel" to { demoForm = true }, "Open confirm dialog" to { demoConfirm = true }, if (showIcons) ("Hide icons" to { showIcons = false }) else ("Show all icons" to { showIcons = true }))
             if (showIcons) {
@@ -333,7 +334,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
                         row.forEach { n ->
                             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                                 MwIcon(n, Color.White, 26.dp)
-                                Text(n, maxLines = 1, style = TextStyle(color = MW.Faint, fontSize = 9.sp))
+                                Text(n, maxLines = 1, style = MwTs(color = MW.Faint, fontSize = 9.sp))
                             }
                         }
                         repeat(5 - row.size) { Spacer(Modifier.weight(1f)) }
@@ -344,7 +345,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
         DevCard("Storage") {
             Text(
                 "${s.recs.size} records · ${s.accounts.size} accounts · ${s.cats.size} categories · ${s.debts.size} debts · ${s.bills.size} bills · ${s.goals.size} goals · ${store.photoCount()} photos\nData file: ${store.fileSize() / 1024} KB",
-                style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
+                style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
             )
             Btns("Copy data as JSON" to {
                 val t = store.exportJson() ?: ""
@@ -358,7 +359,7 @@ fun DevScreen(s: AppState, store: Store, onClose: () -> Unit, onOpen: (String) -
     confirm?.let { c -> ConfirmDialog("Are you sure?", c.first, "Do it", { c.second(); confirm = null }, { confirm = null }) }
     if (demoConfirm) ConfirmDialog("Confirm dialog", "This is how a warning looks.", "OK", { demoConfirm = false }, { demoConfirm = false })
     if (demoForm) FormPanel("Bottom panel", { demoForm = false }) {
-        Text("Forms slide up like this.", style = TextStyle(color = MW.Dim, fontSize = 14.sp))
+        Text("Forms slide up like this.", style = MwTs(color = MW.Dim, fontSize = 14.sp))
         FText("A text box", "", { }, "Type here")
         BigButton("Close") { demoForm = false }
     }

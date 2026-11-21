@@ -73,11 +73,11 @@ object MwTheme {
     var palette by mutableStateOf(DEFAULT_PALETTE)
 
     val isDefault: Boolean get() = palette.id == "default"
-    val bg: Color get() = if (isDefault) Color(0xFF060912) else lerp(vivid(palette.c1, 1.15f, 1.0f), Color.Black, 0.76f)
+    val bg: Color get() = if (isDefault) (MwStyle.bg ?: Color(0xFF060912)) else lerp(vivid(palette.c1, 1.15f, 1.0f), Color.Black, 0.76f)
     /** colour for tinted cards (profile, level, badges): the old deep green on Default */
-    val tint: Color get() = if (isDefault) Color(0xFF16A37F) else lerp(accent, Color.Black, 0.22f)
-    val accent: Color get() = if (isDefault) Color(0xFF2DD4A7) else palette.c3
-    val mint: Color get() = if (isDefault) Color(0xFF7DF0CF) else lerp(palette.c3, Color.White, 0.4f)
+    val tint: Color get() = if (isDefault) (MwStyle.tint ?: Color(0xFF16A37F)) else lerp(accent, Color.Black, 0.22f)
+    val accent: Color get() = if (isDefault) (MwStyle.accent ?: Color(0xFF2DD4A7)) else palette.c3
+    val mint: Color get() = if (isDefault) (MwStyle.mint ?: Color(0xFF7DF0CF)) else lerp(palette.c3, Color.White, 0.4f)
 
     /** more saturated and a touch brighter, so glows look rich instead of muddy */
     fun vivid(c: Color, sat: Float, bright: Float): Color {
@@ -115,35 +115,35 @@ object MwTheme {
 fun ThemePicker(s: AppState, store: Store) {
     val sel = s.settings.palette
     var custom by remember { mutableStateOf(false) }
-    Lbl("Theme", Modifier.padding(top = 4.dp))
+    Lbl("Palette", Modifier.padding(top = 10.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         val list = PALETTES + listOfNotNull(MwTheme.resolve("custom", s.settings.pal).takeIf { it.id == "custom" })
         list.forEach { p ->
             val on = sel == p.id
             Column(
-                Modifier.width(108.dp).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.07f))
-                    .border(if (on) BorderStroke(2.dp, MW.Accent) else BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)), RoundedCornerShape(18.dp))
+                Modifier.width(108.dp).clip(MwShape(18.dp)).background(Color.White.copy(alpha = 0.07f))
+                    .border(if (on) BorderStroke(2.dp, MW.Accent) else BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)), MwShape(18.dp))
                     .clickable { store.updateSettings(mapOf("palette" to JsonPrimitive(p.id))) }.padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Row(Modifier.fillMaxWidth().height(34.dp).clip(RoundedCornerShape(10.dp))) {
+                Row(Modifier.fillMaxWidth().height(34.dp).clip(MwShape(10.dp))) {
                     Box(Modifier.weight(1f).height(34.dp).background(if (p.id == "default") Color(0xFF060912) else lerp(p.c1, Color.Black, 0.3f)))
                     Box(Modifier.weight(1f).height(34.dp).background(p.c2))
                     Box(Modifier.weight(1f).height(34.dp).background(p.c3))
                 }
-                Text(p.name, maxLines = 1, style = TextStyle(color = Color.White, fontSize = 12.5.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold))
+                Text(p.name, maxLines = 1, style = MwTs(color = Color.White, fontSize = 12.5.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold))
             }
         }
         Column(
-            Modifier.width(108.dp).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.07f))
-                .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.22f)), RoundedCornerShape(18.dp))
+            Modifier.width(108.dp).clip(MwShape(18.dp)).background(Color.White.copy(alpha = 0.07f))
+                .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.22f)), MwShape(18.dp))
                 .clickable { custom = true }.padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Box(Modifier.fillMaxWidth().height(34.dp).clip(RoundedCornerShape(10.dp)).background(Color.White.copy(alpha = 0.08f)), contentAlignment = Alignment.Center) {
-                Text("+", style = TextStyle(color = MW.Mint, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
+            Box(Modifier.fillMaxWidth().height(34.dp).clip(MwShape(10.dp)).background(Color.White.copy(alpha = 0.08f)), contentAlignment = Alignment.Center) {
+                Text("+", style = MwTs(color = MW.Mint, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
             }
-            Text(if (sel == "custom") "Edit custom" else "Make your own", maxLines = 1, style = TextStyle(color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold))
+            Text(if (sel == "custom") "Edit custom" else "Make your own", maxLines = 1, style = MwTs(color = Color.White, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold))
         }
     }
     if (custom) CustomThemeForm(s, store) { custom = false }
@@ -156,8 +156,8 @@ private fun CustomThemeForm(s: AppState, store: Store, onClose: () -> Unit) {
     var b by remember { mutableStateOf(cur[1]) }
     var c by remember { mutableStateOf(cur[2]) }
     val ca = parseHex(a); val cb = parseHex(b); val cc = parseHex(c)
-    FormPanel("Your own theme", onClose) {
-        Row(Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(16.dp))) {
+    FormPanel("Your own palette", onClose) {
+        Row(Modifier.fillMaxWidth().height(56.dp).clip(MwShape(16.dp))) {
             Box(Modifier.weight(1f).height(56.dp).background(ca ?: Color.DarkGray))
             Box(Modifier.weight(1f).height(56.dp).background(cb ?: Color.DarkGray))
             Box(Modifier.weight(1f).height(56.dp).background(cc ?: Color.DarkGray))
@@ -165,8 +165,8 @@ private fun CustomThemeForm(s: AppState, store: Store, onClose: () -> Unit) {
         FText("Main color (background glow)", a, { a = it.take(7) }, "#6b5b7b")
         FText("Second color (soft glow)", b, { b = it.take(7) }, "#2b2b2e")
         FText("Accent color (buttons, highlights)", c, { c = it.take(7) }, "#f2c14e")
-        Text("Type colors as 6 digits like #f2c14e. The accent should be a bright color so buttons stay readable.", style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
-        BigButton("Use this theme") {
+        Text("Type colors as 6 digits like #f2c14e. The accent should be a bright color so buttons stay readable.", style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
+        BigButton("Use this palette") {
             if (ca != null && cb != null && cc != null) {
                 fun h(x: String) = "#" + x.trim().removePrefix("#").lowercase()
                 store.updateSettings(mapOf("pal" to JsonPrimitive(h(a) + "," + h(b) + "," + h(c)), "palette" to JsonPrimitive("custom")))

@@ -195,7 +195,7 @@ private fun dataUrlToBitmap(url: String): Bitmap? = try {
 
 @Composable
 private fun MiniAccount(modifier: Modifier, name: String, icon: String, sub: String, selected: Boolean, color: Color, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(20.dp)
+    val shape = MwShape(20.dp)
     Column(
         modifier.clip(shape)
             .background(if (selected) color.copy(alpha = 0.22f) else Color.White.copy(alpha = 0.07f))
@@ -204,14 +204,14 @@ private fun MiniAccount(modifier: Modifier, name: String, icon: String, sub: Str
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         GlyphIcon(icon.ifBlank { name.take(1) }, if (selected) androidx.compose.ui.graphics.lerp(color, Color.White, 0.5f) else Color.White.copy(alpha = 0.85f), 24.dp)
-        Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
-        Text(sub, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = MW.Dim, fontSize = 11.5.sp))
+        Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+        Text(sub, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = MW.Dim, fontSize = 11.5.sp))
     }
 }
 
 @Composable
 private fun CatTile(modifier: Modifier, name: String, icon: String, selected: Boolean, color: Color, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(20.dp)
+    val shape = MwShape(20.dp)
     Column(
         modifier.height(78.dp).clip(shape)
             .background(if (selected) color.copy(alpha = 0.22f) else Color.White.copy(alpha = 0.07f))
@@ -221,18 +221,18 @@ private fun CatTile(modifier: Modifier, name: String, icon: String, selected: Bo
     ) {
         GlyphIcon(icon.ifBlank { "•" }, if (selected) androidx.compose.ui.graphics.lerp(color, Color.White, 0.5f) else Color.White.copy(alpha = 0.85f), 26.dp)
         Spacer(Modifier.height(4.dp))
-        Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold))
+        Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold))
     }
 }
 
 @Composable
 private fun SmallPill(text: String, modifier: Modifier = Modifier, icon: String? = null, onClick: () -> Unit) {
     Row(
-        modifier.clip(RoundedCornerShape(99.dp)).background(Color.White.copy(alpha = 0.1f)).border(1.dp, Color.White.copy(alpha = 0.14f), RoundedCornerShape(99.dp)).clickable { onClick() }.padding(horizontal = 14.dp, vertical = 11.dp),
+        modifier.clip(MwShape(99.dp)).background(Color.White.copy(alpha = 0.1f)).border(1.dp, Color.White.copy(alpha = 0.14f), MwShape(99.dp)).clickable { onClick() }.padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
     ) {
         if (icon != null) { MwIcon(icon, Color.White.copy(alpha = 0.9f), 18.dp); Spacer(Modifier.width(8.dp)) }
-        Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold))
+        Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold))
     }
 }
 
@@ -410,7 +410,7 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
         enter = slideInVertically(tween(280)) { it } + fadeIn(tween(200)),
         exit = slideOutVertically(tween(240)) { it } + fadeOut(tween(200)),
     ) {
-        val top = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+        val top = MwShape(topStart = 32.dp, topEnd = 32.dp)
         Column(
             Modifier.fillMaxWidth().fillMaxHeight(0.95f).glassDark(top)
                 .background(Color(0xFF070B16).copy(alpha = 0.82f))
@@ -418,31 +418,31 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                 .padding(horizontal = 20.dp).padding(top = 14.dp, bottom = 18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.25f)))
+            Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.25f)))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (edit == null) "New record" else "Edit record", Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
-                Box(Modifier.size(38.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)).clickable { close() }, contentAlignment = Alignment.Center) {
+                Text(if (edit == null) "New record" else "Edit record", Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
+                Box(Modifier.size(38.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.1f)).clickable { close() }, contentAlignment = Alignment.Center) {
                     MwIcon("close", Color.White, 18.dp, weight = 2f)
                 }
             }
 
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.07f)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(Modifier.fillMaxWidth().clip(MwShape(18.dp)).background(Color.White.copy(alpha = 0.07f)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf("expense" to "Expense", "income" to "Income", "transfer" to "Transfer", "check" to "Balance").forEach { (k, n) ->
                     val on = type == k
                     val c = typeColor(k)
                     Box(
-                        Modifier.weight(1f).height(40.dp).clip(RoundedCornerShape(14.dp))
+                        Modifier.weight(1f).height(40.dp).clip(MwShape(14.dp))
                             .background(if (on) c.copy(alpha = 0.26f) else Color.Transparent)
-                            .border(1.dp, if (on) c.copy(alpha = 0.7f) else Color.Transparent, RoundedCornerShape(14.dp))
+                            .border(1.dp, if (on) c.copy(alpha = 0.7f) else Color.Transparent, MwShape(14.dp))
                             .clickable { type = k; if (s.cats.none { it.id == cat && it.type == k }) { cat = ""; autoCat = false }; if (cat.isEmpty() && note.isNotBlank() && (k == "expense" || k == "income")) s.guessCat(note, k)?.let { cat = it; autoCat = true } },
                         contentAlignment = Alignment.Center,
-                    ) { Text(n, style = TextStyle(color = if (on) c else Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold)) }
+                    ) { Text(n, style = MwTs(color = if (on) c else Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = if (on) FontWeight.ExtraBold else FontWeight.SemiBold)) }
                 }
             }
 
             // the amount (one centred line)
-            if (type == "check") Text("Balance your bank shows right now", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
-            Text("Amount (" + s.settings.cur + ")", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = TextStyle(color = MW.Dim, fontSize = 12.sp, fontWeight = FontWeight.SemiBold))
+            if (type == "check") Text("Balance your bank shows right now", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
+            Text("Amount (" + s.settings.cur + ")", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MwTs(color = MW.Dim, fontSize = 12.sp, fontWeight = FontWeight.SemiBold))
             val heroSize by animateFloatAsState(if (amountText.length > 9) 38f else 58f, tween(180), label = "heroSize")
             Box(Modifier.fillMaxWidth().height(72.dp), contentAlignment = Alignment.Center) {
                 BasicTextField(
@@ -464,7 +464,7 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                     if (hasOp) (if (shown != null) "= " + s.money(shown) else "Keep typing\u2026")
                     else if (amountText.isEmpty()) "You can type sums like 120+45\u00D72" else "",
                     textAlign = TextAlign.Center, maxLines = 1,
-                    style = TextStyle(
+                    style = MwTs(
                         color = if (hasOp && shown != null) col else MW.Faint,
                         fontSize = if (hasOp) 15.sp else 12.sp, fontWeight = FontWeight.SemiBold,
                     ),
@@ -472,16 +472,16 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
             }
             // date: ‹ Today ›  centred
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(38.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)).clickable { day -= 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
+                Box(Modifier.size(38.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.1f)).clickable { day -= 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
                 Box(Modifier.width(150.dp)) { SmallPill(dayLabel(day), Modifier.fillMaxWidth()) { pickDate() } }
-                Box(Modifier.size(38.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)).clickable { day += 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
+                Box(Modifier.size(38.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.1f)).clickable { day += 1 }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
             }
             // note: always visible, full width
-            Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Box(Modifier.fillMaxWidth().clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
                 BasicTextField(
                     note, { applyNote(it) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-                    textStyle = TextStyle(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(col),
-                    decorationBox = { inner -> Box { if (note.isEmpty()) Text("Add a note or #tag", style = TextStyle(color = Color.White.copy(alpha = 0.4f), fontSize = 15.sp)); inner() } },
+                    textStyle = MwTs(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(col),
+                    decorationBox = { inner -> Box { if (note.isEmpty()) Text("Add a note or #tag", style = MwTs(color = Color.White.copy(alpha = 0.4f), fontSize = 15.sp)); inner() } },
                 )
             }
 
@@ -502,12 +502,12 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                 if (to.isNotEmpty() && kotlin.math.abs(s.rateOf(acct) - s.rateOf(to)) > 1e-9) {
                     val guess = Math.round((evalMath(amountText) ?: 0.0) * s.rateOf(acct) / s.rateOf(to) * 100) / 100.0
                     Lbl("Amount received")
-                    Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
+                    Box(Modifier.fillMaxWidth().clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
                         BasicTextField(
                             toAmtText, { toAmtText = it.filter { c -> c.isDigit() || c == '.' }.take(12) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
-                            textStyle = TextStyle(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(col),
-                            decorationBox = { inner -> Box { if (toAmtText.isEmpty()) Text(if (guess > 0) "About " + trimNum(guess) else "Leave empty to use today's rate", style = TextStyle(color = Color.White.copy(alpha = 0.4f), fontSize = 15.sp)); inner() } },
+                            textStyle = MwTs(color = Color.White, fontSize = 15.sp), cursorBrush = SolidColor(col),
+                            decorationBox = { inner -> Box { if (toAmtText.isEmpty()) Text(if (guess > 0) "About " + trimNum(guess) else "Leave empty to use today's rate", style = MwTs(color = Color.White.copy(alpha = 0.4f), fontSize = 15.sp)); inner() } },
                         )
                     }
                 }
@@ -527,9 +527,9 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                 SmallPill(if (photo.isEmpty()) "Choose photo" else "Change photo", Modifier.weight(1f), "image") { gallery.launch("image/*") }
             }
             if (preview != null) {
-                Box(Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(18.dp)).background(Color.Black.copy(alpha = 0.35f)).clickable { photoView = true }) {
+                Box(Modifier.fillMaxWidth().height(180.dp).clip(MwShape(18.dp)).background(Color.Black.copy(alpha = 0.35f)).clickable { photoView = true }) {
                     Image(preview, "Receipt photo", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
-                    Box(Modifier.align(Alignment.TopEnd).padding(8.dp).size(34.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.6f)).clickable { photo = "" }, contentAlignment = Alignment.Center) {
+                    Box(Modifier.align(Alignment.TopEnd).padding(8.dp).size(34.dp).clip(MwCircle).background(Color.Black.copy(alpha = 0.6f)).clickable { photo = "" }, contentAlignment = Alignment.Center) {
                         MwIcon("close", Color.White, 16.dp, weight = 2f)
                     }
                 }
@@ -551,31 +551,31 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
             }
             if (edit == null && (type == "expense" || type == "income")) {
                 Box(
-                    Modifier.fillMaxWidth().height(46.dp).clip(RoundedCornerShape(23.dp))
+                    Modifier.fillMaxWidth().height(46.dp).clip(MwShape(23.dp))
                         .background(if (fav) col.copy(alpha = 0.22f) else Color.White.copy(alpha = 0.07f))
-                        .border(1.dp, if (fav) col else Color.White.copy(alpha = 0.12f), RoundedCornerShape(23.dp))
+                        .border(1.dp, if (fav) col else Color.White.copy(alpha = 0.12f), MwShape(23.dp))
                         .clickable { fav = !fav },
                     contentAlignment = Alignment.Center,
-                ) { Row(verticalAlignment = Alignment.CenterVertically) { MwIcon("zap", if (fav) col else Color.White, 18.dp); Spacer(Modifier.width(8.dp)); Text(if (fav) "Saved as quick-add" else "Save as quick-add", style = TextStyle(color = if (fav) col else Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)) } }
+                ) { Row(verticalAlignment = Alignment.CenterVertically) { MwIcon("zap", if (fav) col else Color.White, 18.dp); Spacer(Modifier.width(8.dp)); Text(if (fav) "Saved as quick-add" else "Save as quick-add", style = MwTs(color = if (fav) col else Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)) } }
             }
 
             Box(
-                Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(28.dp))
+                Modifier.fillMaxWidth().height(56.dp).clip(MwShape(28.dp))
                     .background(Brush.linearGradient(listOf(col.copy(alpha = 0.95f), col.copy(alpha = 0.7f)))).clickable { save() },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     if (edit != null) "Save changes" else when (type) { "income" -> "Add income"; "transfer" -> "Move money"; "check" -> "Save balance"; else -> "Add expense" },
-                    style = TextStyle(color = MW.OnAccent, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold),
+                    style = MwTs(color = MW.OnAccent, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold),
                 )
             }
             if (edit != null) {
                 Row(Modifier.fillMaxWidth().height(44.dp).clickable { duplicate() }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                     MwIcon("copy", MW.Mint, 18.dp, weight = 2f); Spacer(Modifier.width(8.dp))
-                    Text("Copy to today", style = TextStyle(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                    Text("Copy to today", style = MwTs(color = MW.Mint, fontSize = 14.sp, fontWeight = FontWeight.Bold))
                 }
                 Box(Modifier.fillMaxWidth().height(44.dp).clickable { askDelete = true }, contentAlignment = Alignment.Center) {
-                    Text("Delete this record", style = TextStyle(color = MW.Rose, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                    Text("Delete this record", style = MwTs(color = MW.Rose, fontSize = 14.sp, fontWeight = FontWeight.Bold))
                 }
             }
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.ime))
@@ -596,29 +596,29 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
     if (askDelete && edit != null) {
         androidx.compose.ui.window.Dialog(onDismissRequest = { askDelete = false }) {
             Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Color(0xFF0E1426))
-                    .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(28.dp)).padding(24.dp),
+                Modifier.fillMaxWidth().clip(MwShape(28.dp)).background(Color(0xFF0E1426))
+                    .border(1.dp, Color.White.copy(alpha = 0.16f), MwShape(28.dp)).padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Box(Modifier.size(56.dp).clip(CircleShape).background(Color(0xFFFF6B81).copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(56.dp).clip(MwCircle).background(Color(0xFFFF6B81).copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
                     MwIcon("trash", Color(0xFFFF8FA0), 28.dp)
                 }
-                Text("Delete this record?", style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold), textAlign = TextAlign.Center)
+                Text("Delete this record?", style = MwTs(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold), textAlign = TextAlign.Center)
                 Text(
                     s.money(edit.amount) + if (edit.note.isNotBlank()) " · " + edit.note else "",
-                    style = TextStyle(color = MW.Dim, fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 2,
+                    style = MwTs(color = MW.Dim, fontSize = 14.sp), textAlign = TextAlign.Center, maxLines = 2,
                 )
-                Text("This can't be undone.", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+                Text("This can't be undone.", style = MwTs(color = MW.Faint, fontSize = 12.sp))
                 Spacer(Modifier.height(4.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(25.dp)).background(Color.White.copy(alpha = 0.1f)).clickable { askDelete = false }, contentAlignment = Alignment.Center) {
-                        Text("Keep it", style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+                    Box(Modifier.weight(1f).height(50.dp).clip(MwShape(25.dp)).background(Color.White.copy(alpha = 0.1f)).clickable { askDelete = false }, contentAlignment = Alignment.Center) {
+                        Text("Keep it", style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
                     }
                     Box(
-                        Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(25.dp)).background(Color(0xFFFF6B81))
+                        Modifier.weight(1f).height(50.dp).clip(MwShape(25.dp)).background(Color(0xFFFF6B81))
                             .clickable { askDelete = false; store.deleteRec(edit.id); toast("Deleted"); close() },
                         contentAlignment = Alignment.Center,
-                    ) { Text("Delete", style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
+                    ) { Text("Delete", style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
                 }
             }
         }

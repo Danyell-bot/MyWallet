@@ -70,14 +70,14 @@ private fun JsonObject.int(k: String, def: Int) = str(k).toDoubleOrNull()?.toInt
 
 @Composable
 fun ToggleRow(title: String, sub: String, on: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(22.dp)).clickable { onChange(!on) }.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().glass(MwShape(22.dp)).clickable { onChange(!on) }.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
-            if (sub.isNotEmpty()) Text(sub, style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 17.sp))
+            Text(title, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+            if (sub.isNotEmpty()) Text(sub, style = MwTs(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 17.sp))
         }
         Spacer(Modifier.width(12.dp))
-        Box(Modifier.width(48.dp).height(28.dp).clip(CircleShape).background(if (on) MW.Accent else Color.White.copy(alpha = 0.18f)).padding(3.dp), contentAlignment = if (on) Alignment.CenterEnd else Alignment.CenterStart) {
-            Box(Modifier.size(22.dp).clip(CircleShape).background(Color.White))
+        Box(Modifier.width(48.dp).height(28.dp).clip(MwCircle).background(if (on) MW.Accent else Color.White.copy(alpha = 0.18f)).padding(3.dp), contentAlignment = if (on) Alignment.CenterEnd else Alignment.CenterStart) {
+            Box(Modifier.size(22.dp).clip(MwCircle).background(Color.White))
         }
     }
 }
@@ -120,10 +120,10 @@ fun RecurringScreen(s: AppState, store: Store, onClose: () -> Unit) {
             ItemRow(
                 if (inc) "💵" else "🔁", r.str("name"),
                 recurText(r) + (if (nx != null) " · next " + fmtDate(fromDn(nx)) else ""), MW.Dim, if (inc) MW.Mint else MW.Violet,
-                trailing = { Text(s.money(r.dbl("amount")), style = TextStyle(color = if (inc) MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) },
+                trailing = { Text(s.money(r.dbl("amount")), style = MwTs(color = if (inc) MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) },
             ) { form = r }
         }
-        if (s.recurring.isNotEmpty()) Text("When you open the app, records that came due since last time are added for you. Delete one from History if it did not happen.", style = TextStyle(color = MW.Faint, fontSize = 12.5.sp, lineHeight = 18.sp))
+        if (s.recurring.isNotEmpty()) Text("When you open the app, records that came due since last time are added for you. Delete one from History if it did not happen.", style = MwTs(color = MW.Faint, fontSize = 12.5.sp, lineHeight = 18.sp))
     }
     if (adding || form != null) RecurForm(s, store, form) { adding = false; form = null }
 }
@@ -191,20 +191,20 @@ private fun RecurForm(s: AppState, store: Store, edit: JsonObject?, onClose: () 
 @Composable
 private fun PinPad(buf: String, error: String, title: String, sub: String, onKey: (String) -> Unit, onDel: () -> Unit) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(title, style = TextStyle(color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold), textAlign = TextAlign.Center)
+        Text(title, style = MwTs(color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold), textAlign = TextAlign.Center)
         Spacer(Modifier.height(6.dp))
-        Text(if (error.isNotEmpty()) error else sub, textAlign = TextAlign.Center, style = TextStyle(color = if (error.isNotEmpty()) MW.Rose else MW.Dim, fontSize = 13.5.sp))
+        Text(if (error.isNotEmpty()) error else sub, textAlign = TextAlign.Center, style = MwTs(color = if (error.isNotEmpty()) MW.Rose else MW.Dim, fontSize = 13.5.sp))
         Spacer(Modifier.height(22.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            repeat(4) { i -> Box(Modifier.size(16.dp).clip(CircleShape).background(if (i < buf.length) MW.Mint else Color.White.copy(alpha = 0.2f))) }
+            repeat(4) { i -> Box(Modifier.size(16.dp).clip(MwCircle).background(if (i < buf.length) MW.Mint else Color.White.copy(alpha = 0.2f))) }
         }
         Spacer(Modifier.height(26.dp))
         listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"), listOf("", "0", "<")).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(18.dp), modifier = Modifier.padding(bottom = 14.dp)) {
                 row.forEach { k ->
                     if (k.isEmpty()) Spacer(Modifier.size(70.dp))
-                    else Box(Modifier.size(70.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.09f)).clickable { if (k == "<") onDel() else onKey(k) }, contentAlignment = Alignment.Center) {
-                        if (k == "<") MwIcon("back", Color.White, 24.dp, weight = 2f) else Text(k, style = TextStyle(color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Medium))
+                    else Box(Modifier.size(70.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.09f)).clickable { if (k == "<") onDel() else onKey(k) }, contentAlignment = Alignment.Center) {
+                        if (k == "<") MwIcon("back", Color.White, 24.dp, weight = 2f) else Text(k, style = MwTs(color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Medium))
                     }
                 }
             }
@@ -225,7 +225,7 @@ fun LockScreen(store: Store, onUnlock: () -> Unit) {
     Box(Modifier.fillMaxSize().background(MW.Bg)) {
         SceneBackground(1f)
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Box(Modifier.size(56.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon("lock", MW.Mint, 26.dp) }
+            Box(Modifier.size(56.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon("lock", MW.Mint, 26.dp) }
             Spacer(Modifier.height(18.dp))
             PinPad(buf, error, "MyWallet is locked", "Enter your passcode", onKey = { k ->
                 if (buf.length < 4) {
@@ -260,12 +260,12 @@ fun AppLockScreen(store: Store, onClose: () -> Unit) {
         on = true; finish(); toast7(ctx, "Passcode saved")
     }
     ToolShell("App lock", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.size(54.dp).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon("lock", if (on) MW.Mint else MW.Dim, 26.dp) }
-            Text(if (on) "App lock is on" else "App lock is off", style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(Modifier.size(54.dp).clip(MwShape(18.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon("lock", if (on) MW.Mint else MW.Dim, 26.dp) }
+            Text(if (on) "App lock is on" else "App lock is off", style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
             Text(
                 if (on) "MyWallet asks for your 4-digit passcode when you open it, or come back after a while." else "Protect your money with a 4-digit passcode.",
-                textAlign = TextAlign.Center, style = TextStyle(color = MW.Dim, fontSize = 13.5.sp, lineHeight = 19.sp),
+                textAlign = TextAlign.Center, style = MwTs(color = MW.Dim, fontSize = 13.5.sp, lineHeight = 19.sp),
             )
         }
         if (!on) BigButton("Set a passcode", icon = "lock") { mode = "new"; buf = ""; error = "" }
@@ -282,7 +282,7 @@ fun AppLockScreen(store: Store, onClose: () -> Unit) {
             }
             GhostButton("Turn off app lock", Modifier.fillMaxWidth(), Color(0xFFFF8FA0), "lock") { mode = "verifyOff"; buf = ""; error = "" }
         }
-        Text("The passcode works like in your old MyWallet. If you forget it, restore a backup to get back in.", style = TextStyle(color = MW.Faint, fontSize = 12.5.sp, lineHeight = 18.sp))
+        Text("The passcode works like in your old MyWallet. If you forget it, restore a backup to get back in.", style = MwTs(color = MW.Faint, fontSize = 12.5.sp, lineHeight = 18.sp))
     }
     if (mode.isNotEmpty()) {
         val (title, sub) = when (mode) {
@@ -321,11 +321,12 @@ fun AppLockScreen(store: Store, onClose: () -> Unit) {
 fun DisplayScreen(s: AppState, store: Store, onClose: () -> Unit) {
     var cur by remember { mutableStateOf(s.settings.cur) }
     ToolShell("Display", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Lbl("Preview")
             Spacer(Modifier.height(6.dp))
             MoneyText(s.moneyParts(1234567.891), 34f)
         }
+        UiThemePicker(s, store)
         ThemePicker(s, store)
         FChips("Currency", listOf("₱", "$", "€", "£", "¥", "₹", "₩", "RM", "Rp").map { opt(it, it) }, s.settings.cur, { cur = it; store.updateSettings(mapOf("cur" to JsonPrimitive(it))) })
         FText("Or type your own symbol", cur, { cur = it.take(4); if (it.isNotBlank()) store.updateSettings(mapOf("cur" to JsonPrimitive(it.trim()))) }, "₱")
@@ -361,16 +362,16 @@ fun HelpScreen(onClose: () -> Unit) {
     )
     ToolShell("Help", onClose) {
         items.forEach { (ic, t, d) ->
-            Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(22.dp)).padding(16.dp), verticalAlignment = Alignment.Top) {
-                Box(Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon(ic, MW.Mint, 22.dp) }
+            Row(Modifier.fillMaxWidth().glass(MwShape(22.dp)).padding(16.dp), verticalAlignment = Alignment.Top) {
+                Box(Modifier.size(40.dp).clip(MwShape(14.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon(ic, MW.Mint, 22.dp) }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(t, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
-                    Text(d, style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+                    Text(t, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+                    Text(d, style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
                 }
             }
         }
-        Text("MyWallet 1.3 · native", Modifier.fillMaxWidth().padding(top = 6.dp), textAlign = TextAlign.Center, style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+        Text("MyWallet 1.3 · native", Modifier.fillMaxWidth().padding(top = 6.dp), textAlign = TextAlign.Center, style = MwTs(color = MW.Faint, fontSize = 12.sp))
     }
 }
 
@@ -398,9 +399,9 @@ fun RemindersScreen(store: Store, onClose: () -> Unit) {
         }
         Text(
             "They remind you about bills and debts that are close, a bank that needs a top-up, or your streak. When there is nothing urgent, you just get a light nudge to log your day. Notifications never show amounts.",
-            style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
+            style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
         )
-        if (on && !allowed && android.os.Build.VERSION.SDK_INT >= 33) Text("Notifications are turned off for MyWallet in your phone settings, so nothing will show up.", style = TextStyle(color = MW.Rose, fontSize = 13.sp, lineHeight = 19.sp))
+        if (on && !allowed && android.os.Build.VERSION.SDK_INT >= 33) Text("Notifications are turned off for MyWallet in your phone settings, so nothing will show up.", style = MwTs(color = MW.Rose, fontSize = 13.sp, lineHeight = 19.sp))
         GhostButton("Send a test notification", Modifier.fillMaxWidth(), Color.White, "bell") {
             if (!com.example.mywallet.GentleReminders.canNotify(ctx)) {
                 if (android.os.Build.VERSION.SDK_INT >= 33) ask.launch(android.Manifest.permission.POST_NOTIFICATIONS) else toast7(ctx, "Notifications are turned off for MyWallet")
@@ -408,6 +409,6 @@ fun RemindersScreen(store: Store, onClose: () -> Unit) {
                 val (t, m) = com.example.mywallet.GentleReminders.message(null); com.example.mywallet.GentleReminders.show(ctx, t, m); toast7(ctx, "Sent")
             }
         }
-        Text("If nothing arrives, open phone Settings > Apps > MyWallet > Battery and choose Unrestricted.", style = TextStyle(color = MW.Faint, fontSize = 12.5.sp, lineHeight = 18.sp))
+        Text("If nothing arrives, open phone Settings > Apps > MyWallet > Battery and choose Unrestricted.", style = MwTs(color = MW.Faint, fontSize = 12.5.sp, lineHeight = 18.sp))
     }
 }

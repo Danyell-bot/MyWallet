@@ -89,18 +89,58 @@ private val ICONS = mapOf(
     "upload" to Ic(listOf("M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", "M17 8l-5-5-5 5", "M12 3v12")),
     "share" to Ic(listOf("M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8", "M16 6l-4-4-4 4", "M12 2v13")),
     "gear" to Ic(listOf("M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z")),
+    "paw" to Ic(listOf("M12 12.5c-2.6 0-5 2.6-5 5 0 1.7 1.3 2.5 2.8 2.5.9 0 1.4-.3 2.2-.3s1.3.3 2.2.3c1.5 0 2.8-.8 2.8-2.5 0-2.4-2.4-5-5-5z"), dots = listOf(Triple(5.4f, 11f, 1.9f), Triple(9f, 6.6f, 1.9f), Triple(15f, 6.6f, 1.9f), Triple(18.6f, 11f, 1.9f))),
+    "cat" to Ic(listOf("M5 8 4 3.5 9 6c1.5-.4 4.5-.4 6 0l5-2.5L19 8c1.2 1.5 2 3.3 2 5.5 0 4.5-4 7.5-9 7.5s-9-3-9-7.5c0-2.2.8-4 2-5.5z", "M10.6 16.2c.6.5 2.2.5 2.8 0", "M2.5 14.5 6.5 14", "M21.5 14.5 17.5 14"), dots = listOf(Triple(8.8f, 12.3f, 1.1f), Triple(15.2f, 12.3f, 1.1f))),
+    "fish" to Ic(listOf("M3 12c3-5 8-6 12-3l5-3v12l-5-3c-4 3-9 2-12-3z"), dots = listOf(Triple(7.6f, 11.4f, 0.9f))),
 )
+
+/** a different picture for some icons in some themes (the Cozy cat theme uses cats, paws and fish) */
+private fun aliasFor(kind: String): String = if (MwStyle.cur.id != "cat") kind else when (kind) {
+    "home" -> "cat"; "wallet" -> "cat"; "heart" -> "paw"; "utensils" -> "fish"; "gift" -> "paw"; "target" -> "paw"; else -> kind
+}
+
+/** the pixel theme draws every icon on a tiny 20 x 20 grid and blows it up with hard edges */
+private fun pixelIcon(ic: Ic): androidx.compose.ui.graphics.ImageBitmap {
+    val n = 20
+    val bmp = androidx.compose.ui.graphics.ImageBitmap(n, n)
+    val c = androidx.compose.ui.graphics.Canvas(bmp)
+    val k = n / 24f
+    val line = androidx.compose.ui.graphics.Paint().apply {
+        isAntiAlias = false; style = androidx.compose.ui.graphics.PaintingStyle.Stroke; strokeWidth = 2.3f
+        strokeCap = StrokeCap.Square; strokeJoin = StrokeJoin.Miter; color = Color.White
+    }
+    val fill = androidx.compose.ui.graphics.Paint().apply { isAntiAlias = false; style = androidx.compose.ui.graphics.PaintingStyle.Fill; color = Color.White }
+    c.save(); c.scale(k, k)
+    ic.paths.forEach { c.drawPath(PathParser().parsePathString(it).toPath(), line) }
+    ic.rects.forEach { c.drawRect(it[0], it[1], it[0] + it[2], it[1] + it[3], line) }
+    ic.dots.forEach { c.drawCircle(Offset(it.first, it.second), maxOf(it.third, 1.1f), fill) }
+    c.restore()
+    return bmp
+}
 
 @Composable
 fun MwIcon(kind: String, tint: Color, size: Dp = 22.dp, modifier: Modifier = Modifier, weight: Float = 1.7f) {
-    val ic = ICONS[kind] ?: return
-    val paths = remember(kind) { ic.paths.map { PathParser().parsePathString(it).toPath() } }
+    val id = MwStyle.cur.id
+    val key = aliasFor(kind)
+    val ic = ICONS[key] ?: return
+    if (id == "pixel") {
+        val bmp = remember(key) { pixelIcon(ic) }
+        Canvas(modifier.size(size)) {
+            drawImage(bmp, dstSize = androidx.compose.ui.unit.IntSize(this.size.width.toInt(), this.size.height.toInt()),
+                filterQuality = androidx.compose.ui.graphics.FilterQuality.None, colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(tint))
+        }
+        return
+    }
+    val paths = remember(key) { ic.paths.map { PathParser().parsePathString(it).toPath() } }
+    // each theme has its own line style: sharp for Phantom and Terminal, chunky for Cozy cat, hairline for Minimal
+    val w = when (id) { "phantom" -> weight * 1.3f; "cat" -> weight * 1.2f; "terminal" -> weight * 0.95f; "minimal" -> weight * 0.85f; else -> weight }
+    val sharp = id == "phantom" || id == "terminal"
     Canvas(modifier.size(size)) {
         val u = this.size.width / 24f
         scale(u, u, pivot = Offset.Zero) {
-            val st = Stroke(weight, cap = StrokeCap.Round, join = StrokeJoin.Round)
+            val st = if (sharp) Stroke(w, cap = StrokeCap.Butt, join = StrokeJoin.Miter, miter = 6f) else Stroke(w, cap = StrokeCap.Round, join = StrokeJoin.Round)
             paths.forEach { drawPath(it, tint, style = st) }
-            ic.rects.forEach { drawRoundRect(tint, Offset(it[0], it[1]), Size(it[2], it[3]), CornerRadius(1.6f), style = st) }
+            ic.rects.forEach { drawRoundRect(tint, Offset(it[0], it[1]), Size(it[2], it[3]), CornerRadius(if (sharp) 0.4f else 1.6f), style = st) }
             ic.dots.forEach { drawCircle(tint, it.third, Offset(it.first, it.second)) }
         }
     }

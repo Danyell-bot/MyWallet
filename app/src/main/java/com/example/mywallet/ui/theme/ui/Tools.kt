@@ -86,14 +86,14 @@ private fun fmt(d: Double): String = java.math.BigDecimal.valueOf(d).stripTraili
 
 @Composable
 private fun Pillow(text: String, color: Color) {
-    Box(Modifier.clip(RoundedCornerShape(99.dp)).background(color.copy(alpha = 0.18f)).padding(horizontal = 9.dp, vertical = 3.dp)) {
-        Text(text, maxLines = 1, style = TextStyle(color = color, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold))
+    Box(Modifier.clip(MwShape(99.dp)).background(color.copy(alpha = 0.18f)).padding(horizontal = 9.dp, vertical = 3.dp)) {
+        Text(text, maxLines = 1, style = MwTs(color = color, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold))
     }
 }
 
 @Composable
 private fun SumTile(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
-    Column(modifier.glass(RoundedCornerShape(22.dp), tint = color).padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(modifier.glass(MwShape(22.dp), tint = color).padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Lbl(label, color = color)
         Text(value, maxLines = 1, style = numStyle(22f))
     }
@@ -101,17 +101,17 @@ private fun SumTile(label: String, value: String, color: Color, modifier: Modifi
 
 @Composable
 private fun Avatar(text: String, color: Color, size: Dp = 44.dp) {
-    Box(Modifier.size(size).clip(CircleShape).background(Brush.linearGradient(listOf(color.copy(alpha = 0.55f), color.copy(alpha = 0.22f)))), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(size).clip(MwCircle).background(Brush.linearGradient(listOf(color.copy(alpha = 0.55f), color.copy(alpha = 0.22f)))), contentAlignment = Alignment.Center) {
         if (text == "\u2713") MwIcon("check", Color.White, size * 0.5f, weight = 2.4f)
-        else if (text.length == 1 && text[0].isLetter()) Text(text, style = TextStyle(color = Color.White, fontSize = (size.value * 0.42f).sp, fontWeight = FontWeight.ExtraBold))
+        else if (text.length == 1 && text[0].isLetter()) Text(text, style = MwTs(color = Color.White, fontSize = (size.value * 0.42f).sp, fontWeight = FontWeight.ExtraBold))
         else GlyphIcon(text, Color.White, size * 0.5f)
     }
 }
 
 @Composable
 private fun ProgressLine(f: Float, color: Color) {
-    Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(6.dp)).background(Color.White.copy(alpha = 0.12f))) {
-        Box(Modifier.fillMaxWidth(f.coerceIn(0.02f, 1f)).height(6.dp).clip(RoundedCornerShape(6.dp)).background(color))
+    Box(Modifier.fillMaxWidth().height(6.dp).clip(MwShape(6.dp)).background(Color.White.copy(alpha = 0.12f))) {
+        Box(Modifier.fillMaxWidth(f.coerceIn(0.02f, 1f)).height(6.dp).clip(MwShape(6.dp)).background(color))
     }
 }
 
@@ -119,7 +119,7 @@ private fun ProgressLine(f: Float, color: Color) {
 private fun SectionHead(text: String, count: Int? = null, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Lbl(text, Modifier.weight(1f))
-        if (count != null) Text("$count", style = TextStyle(color = MW.Faint, fontSize = 12.sp, fontWeight = FontWeight.Bold))
+        if (count != null) Text("$count", style = MwTs(color = MW.Faint, fontSize = 12.sp, fontWeight = FontWeight.Bold))
     }
 }
 
@@ -150,19 +150,19 @@ fun BillsScreen(s: AppState, store: Store, onClose: () -> Unit) {
         paid.forEach { b -> BillCard(s, store, b, billDue(b, t), t, true) { form = b } }
         val hist = s.bills.flatMap { b -> b.paid.map { Triple(it, b, b.amount) } }.filter { it.first != ym }.sortedByDescending { it.first }
         if (hist.isNotEmpty()) {
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { history = !history }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().clip(MwShape(16.dp)).clickable { history = !history }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Lbl("History", Modifier.weight(1f))
-                Text(if (history) "Hide" else "Show " + hist.size, style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+                Text(if (history) "Hide" else "Show " + hist.size, style = MwTs(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
             }
-            if (history) Column(Modifier.fillMaxWidth().glassLite(RoundedCornerShape(22.dp)).padding(horizontal = 16.dp, vertical = 6.dp)) {
+            if (history) Column(Modifier.fillMaxWidth().glassLite(MwShape(22.dp)).padding(horizontal = 16.dp, vertical = 6.dp)) {
                 hist.take(40).forEachIndexed { i, (m, b, amt) ->
                     if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.08f)))
                     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text(b.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
-                            Text(monthLabel(m), style = TextStyle(color = MW.Dim, fontSize = 12.sp))
+                            Text(b.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                            Text(monthLabel(m), style = MwTs(color = MW.Dim, fontSize = 12.sp))
                         }
-                        Text(s.money(amt), style = TextStyle(color = MW.Dim, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
+                        Text(s.money(amt), style = MwTs(color = MW.Dim, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
                     }
                 }
             }
@@ -178,20 +178,20 @@ private fun BillCard(s: AppState, store: Store, b: Bill, due: BillDue, t: Long, 
     val late = !isPaid && k < 0
     val soon = !isPaid && k in 0..3
     val tone = if (isPaid) MW.Mint else if (late) MW.Rose else if (soon) MW.Amber else MW.Dim
-    Column(Modifier.fillMaxWidth().glassLite(RoundedCornerShape(22.dp)).clickable { onOpen() }.padding(14.dp)) {
+    Column(Modifier.fillMaxWidth().glassLite(MwShape(22.dp)).clickable { onOpen() }.padding(14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Avatar(s.cat(b.cat)?.icon ?: "🧾", if (isPaid) MW.Accent else if (late) Color(0xFFFF6B81) else MW.Amber)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(b.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+                Text(b.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Pillow(if (isPaid) "Paid" else dueText(due.dn), tone)
-                    Text("every " + ordinal(b.day), style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+                    Text("every " + ordinal(b.day), style = MwTs(color = MW.Faint, fontSize = 12.sp))
                 }
             }
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(s.money(b.amount), style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
-                if (!isPaid) Box(Modifier.clip(RoundedCornerShape(99.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))).clickable {
+                Text(s.money(b.amount), style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
+                if (!isPaid) Box(Modifier.clip(MwShape(99.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))).clickable {
                     if (s.acc(b.acct) == null) toast(ctx, "Pick a pay-from account first")
                     else {
                         store.payBill(b.id, due.key, buildJsonObject {
@@ -200,7 +200,7 @@ private fun BillCard(s: AppState, store: Store, b: Bill, due: BillDue, t: Long, 
                         })
                         toast(ctx, b.name + " paid")
                     }
-                }.padding(horizontal = 16.dp, vertical = 6.dp)) { Text("Pay", style = TextStyle(color = MW.OnAccent, fontSize = 12.5.sp, fontWeight = FontWeight.ExtraBold)) }
+                }.padding(horizontal = 16.dp, vertical = 6.dp)) { Text("Pay", style = MwTs(color = MW.OnAccent, fontSize = 12.5.sp, fontWeight = FontWeight.ExtraBold)) }
             }
         }
     }
@@ -269,9 +269,9 @@ fun DebtsScreen(s: AppState, store: Store, focus: String? = null, onClose: () ->
         if (mine.isNotEmpty()) SectionHead("You owe", mine.size)
         mine.forEach { d -> DebtCard(s, d, t) { view = d.id } }
         if (done.isNotEmpty()) {
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable { history = !history }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().clip(MwShape(16.dp)).clickable { history = !history }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                 Lbl("History", Modifier.weight(1f))
-                Text(if (history) "Hide" else "Show " + done.size, style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+                Text(if (history) "Hide" else "Show " + done.size, style = MwTs(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
             }
             if (history) done.forEach { d -> DebtCard(s, d, t) { view = d.id } }
         }
@@ -285,22 +285,22 @@ fun DebtsScreen(s: AppState, store: Store, focus: String? = null, onClose: () ->
 private fun DebtCard(s: AppState, d: Debt, t: Long, onOpen: () -> Unit) {
     val tone = if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81)
     val late = !d.paid && d.due.isNotEmpty() && dn(d.due) < t
-    Column(Modifier.fillMaxWidth().glassLite(RoundedCornerShape(22.dp)).clickable { onOpen() }.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().glassLite(MwShape(22.dp)).clickable { onOpen() }.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Avatar(if (d.paid) "\u2713" else d.who.trim().take(1).uppercase().ifEmpty { "?" }, tone)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(d.who, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+                Text(d.who, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (d.paid) Pillow(if (d.theyOweMe) "Paid you back" else "You paid back", MW.Mint)
                     else if (d.due.isNotEmpty()) Pillow(dueText(dn(d.due)), if (late) MW.Rose else MW.Amber)
                     else Pillow(if (d.theyOweMe) "Owes you" else "You owe", tone)
-                    if (d.note.isNotBlank()) Text(d.note, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+                    if (d.note.isNotBlank()) Text(d.note, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = MW.Faint, fontSize = 12.sp))
                 }
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(s.money(if (d.paid) d.amount else d.left()), style = TextStyle(color = if (d.paid) MW.Dim else if (d.theyOweMe) MW.Mint else Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
-                if (!d.paid && d.pays.isNotEmpty()) Text("of " + s.money(d.amount), style = TextStyle(color = MW.Faint, fontSize = 11.5.sp))
+                Text(s.money(if (d.paid) d.amount else d.left()), style = MwTs(color = if (d.paid) MW.Dim else if (d.theyOweMe) MW.Mint else Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
+                if (!d.paid && d.pays.isNotEmpty()) Text("of " + s.money(d.amount), style = MwTs(color = MW.Faint, fontSize = 11.5.sp))
             }
         }
         if (!d.paid && d.pays.isNotEmpty()) ProgressLine((d.paidSoFar() / d.amount).toFloat(), tone)
@@ -321,7 +321,7 @@ private fun DebtForm(store: Store, onClose: () -> Unit) {
         FText("Amount", amount, { amount = it }, "0", decimal = true)
         FDate("Due date (optional)", due, { due = it }, optional = true)
         FText("Note", note, { note = it }, "Optional")
-        Text("This only tracks the debt. Your balances change when you mark it as paid.", style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
+        Text("This only tracks the debt. Your balances change when you mark it as paid.", style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
         BigButton("Save") {
             val a = num(amount)
             if (who.isBlank()) toast(ctx, "Who is it?") else if (a <= 0) toast(ctx, "Enter an amount")
@@ -344,29 +344,29 @@ private fun DebtView(s: AppState, store: Store, d: Debt, onClose: () -> Unit) {
     var pay by remember { mutableStateOf(if (left > 0) fmtNum(left) else "") }
     val tone = if (d.theyOweMe) MW.Accent else Color(0xFFFF6B81)
     FormPanel(d.who, onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp), tint = tone).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp), tint = tone).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Avatar(if (d.paid) "\u2713" else d.who.trim().take(1).uppercase().ifEmpty { "?" }, tone, 56.dp)
             Lbl(if (d.paid) "Settled" else if (d.theyOweMe) "Still owes you" else "You still owe", color = tone)
             Text(s.money(if (d.paid) d.amount else left), style = numStyle(38f, if (d.paid) MW.Dim else Color.White))
             if (d.pays.isNotEmpty() && !d.paid) {
-                Text("of " + s.money(d.amount) + " · paid " + s.money(d.paidSoFar()), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+                Text("of " + s.money(d.amount) + " · paid " + s.money(d.paidSoFar()), style = MwTs(color = MW.Dim, fontSize = 13.sp))
                 ProgressLine((d.paidSoFar() / d.amount).toFloat(), tone)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (d.due.isNotEmpty()) Pillow("Due " + fmtDate(d.due), if (!d.paid && dn(d.due) < todayDn()) MW.Rose else MW.Amber)
                 if (d.date.isNotEmpty()) Pillow("Since " + fmtDate(d.date), MW.Dim)
             }
-            if (d.note.isNotBlank()) Text(d.note, style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+            if (d.note.isNotBlank()) Text(d.note, style = MwTs(color = MW.Dim, fontSize = 13.sp))
         }
         if (d.pays.isNotEmpty()) {
-            Column(Modifier.fillMaxWidth().glassLite(RoundedCornerShape(22.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.fillMaxWidth().glassLite(MwShape(22.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Lbl("Payments")
                 d.pays.forEach { p ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.size(8.dp).clip(CircleShape).background(tone))
+                        Box(Modifier.size(8.dp).clip(MwCircle).background(tone))
                         Spacer(Modifier.width(10.dp))
-                        Text(fmtDate(p.date), Modifier.weight(1f), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
-                        Text(s.money(p.amount), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
+                        Text(fmtDate(p.date), Modifier.weight(1f), style = MwTs(color = MW.Dim, fontSize = 13.sp))
+                        Text(s.money(p.amount), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
                     }
                 }
             }
@@ -374,7 +374,7 @@ private fun DebtView(s: AppState, store: Store, d: Debt, onClose: () -> Unit) {
         if (!d.paid) {
             FText(if (d.theyOweMe) "They paid you" else "You paid", pay, { pay = it }, "0", decimal = true)
             FChips(if (d.theyOweMe) "Money goes into" else "Money comes out of", s.activeAccts().map { opt(it.id, it.name, it.icon) }, acct, { acct = it })
-            Text("Pay part of it, or all of it. What is still owed stays on the list.", style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
+            Text("Pay part of it, or all of it. What is still owed stays on the list.", style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
             BigButton("Record payment", icon = "check") {
                 val a = num(pay)
                 if (s.acc(acct) == null) toast(ctx, "Choose an account")
@@ -419,20 +419,20 @@ fun GoalsScreen(s: AppState, store: Store, onClose: () -> Unit) {
         s.goals.forEach { g ->
             val saved = s.goalSaved(g); val p = if (g.target > 0) (saved / g.target).toFloat() else 0f
             val col = GOAL_COL[((g.color ?: 0) % 8 + 8) % 8]
-            Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).clickable { view = g }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Ring(p, 66.dp, col, 7f) { Text("${(p * 100).toInt()}%", style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)) }
+            Row(Modifier.fillMaxWidth().glass(MwShape(24.dp)).clickable { view = g }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Ring(p, 66.dp, col, 7f) { Text("${(p * 100).toInt()}%", style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)) }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { GlyphIcon(g.icon.ifBlank { "🎯" }, col, 18.dp); Spacer(Modifier.width(8.dp)); Text(g.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)) }
-                    Text(s.money(saved) + " of " + s.money(g.target), style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
-                    if (p >= 1f) Text("Goal reached!", style = TextStyle(color = MW.Mint, fontSize = 12.5.sp, fontWeight = FontWeight.Bold))
+                    Row(verticalAlignment = Alignment.CenterVertically) { GlyphIcon(g.icon.ifBlank { "🎯" }, col, 18.dp); Spacer(Modifier.width(8.dp)); Text(g.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)) }
+                    Text(s.money(saved) + " of " + s.money(g.target), style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
+                    if (p >= 1f) Text("Goal reached!", style = MwTs(color = MW.Mint, fontSize = 12.5.sp, fontWeight = FontWeight.Bold))
                     else if (g.deadline.isNotEmpty()) {
-                        val w = maxOf(1.0, Math.ceil((dn(g.deadline) - todayDn()) / 7.0)); Text("Save " + s.money((g.target - saved) / w) + " a week for " + fmtDate(g.deadline), style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
+                        val w = maxOf(1.0, Math.ceil((dn(g.deadline) - todayDn()) / 7.0)); Text("Save " + s.money((g.target - saved) / w) + " a week for " + fmtDate(g.deadline), style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
                     }
                 }
             }
         }
-        if (s.goals.isNotEmpty()) Text("Link a goal to an account and that account grows the goal on its own.", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+        if (s.goals.isNotEmpty()) Text("Link a goal to an account and that account grows the goal on its own.", style = MwTs(color = MW.Faint, fontSize = 12.sp))
     }
     if (adding) GoalForm(s, store, null) { adding = false }
     editing?.let { g -> GoalForm(s, store, g) { editing = null } }
@@ -458,7 +458,7 @@ private fun GoalForm(s: AppState, store: Store, edit: Goal?, onClose: () -> Unit
             Lbl("Colour", Modifier.padding(bottom = 8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 GOAL_COL.forEachIndexed { i, c ->
-                    Box(Modifier.weight(1f).height(38.dp).clip(RoundedCornerShape(12.dp)).background(c).border(if (color == i) 3.dp else 0.dp, Color.White, RoundedCornerShape(12.dp)).clickable { color = i })
+                    Box(Modifier.weight(1f).height(38.dp).clip(MwShape(12.dp)).background(c).border(if (color == i) 3.dp else 0.dp, Color.White, MwShape(12.dp)).clickable { color = i })
                 }
             }
         }
@@ -494,15 +494,15 @@ private fun GoalView(s: AppState, store: Store, g: Goal, onClose: () -> Unit, on
         toast(ctx, if (sign > 0) "Added to your goal" else "Taken out of your goal")
     }
     FormPanel(g.name, onClose) {
-        Row(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().glass(MwShape(24.dp)).padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Ring(p, 96.dp, col, 10f) { Text("${(p * 100).toInt()}%", style = numStyle(22f)) }
             Spacer(Modifier.width(16.dp))
             Column {
                 Lbl("Saved"); Text(s.money(saved), style = numStyle(28f))
-                Text("of " + s.money(g.target), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+                Text("of " + s.money(g.target), style = MwTs(color = MW.Dim, fontSize = 13.sp))
             }
         }
-        if (tracked) Text("Tracking " + (s.acc(g.acct!!)?.name ?: "") + ". The goal grows as that account grows.", style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+        if (tracked) Text("Tracking " + (s.acc(g.acct!!)?.name ?: "") + ". The goal grows as that account grows.", style = MwTs(color = MW.Dim, fontSize = 13.sp))
         else {
             FText("Amount", amt, { amt = it }, "0", decimal = true)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -514,8 +514,8 @@ private fun GoalView(s: AppState, store: Store, g: Goal, onClose: () -> Unit, on
             Lbl("History")
             g.contribs.takeLast(6).reversed().forEach { c ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Text(fmtDate(c.date), Modifier.weight(1f), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
-                    Text(s.money(c.amount, signed = true), style = TextStyle(color = if (c.amount < 0) MW.Rose else MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+                    Text(fmtDate(c.date), Modifier.weight(1f), style = MwTs(color = MW.Dim, fontSize = 13.sp))
+                    Text(s.money(c.amount, signed = true), style = MwTs(color = if (c.amount < 0) MW.Rose else MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.Bold))
                 }
             }
         }
@@ -540,19 +540,19 @@ fun CategoriesScreen(s: AppState, store: Store, onClose: () -> Unit) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     row.forEach { c ->
                         Column(
-                            Modifier.weight(1f).height(86.dp).glass(RoundedCornerShape(22.dp)).clickable { edit = c }.padding(8.dp),
+                            Modifier.weight(1f).height(86.dp).glass(MwShape(22.dp)).clickable { edit = c }.padding(8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                         ) {
                             GlyphIcon(c.icon, Color.White.copy(alpha = if (c.ignored) 0.4f else 0.95f), 26.dp)
                             Spacer(Modifier.height(6.dp))
-                            Text(c.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White.copy(alpha = if (c.ignored) 0.45f else 1f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold))
+                            Text(c.name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White.copy(alpha = if (c.ignored) 0.45f else 1f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold))
                         }
                     }
                     repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         }
-        Text("Tap a category to rename it, hide it or delete it.", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+        Text("Tap a category to rename it, hide it or delete it.", style = MwTs(color = MW.Faint, fontSize = 12.sp))
     }
     addType?.let { CatForm(s, store, null, it) { addType = null } }
     edit?.let { CatForm(s, store, it, it.type) { edit = null } }
@@ -599,9 +599,9 @@ fun QuickAddScreen(s: AppState, store: Store, onClose: () -> Unit) {
             ItemRow(f.icon.ifBlank { "⚡" }, f.name, (a?.name ?: "Missing account") + " · tap to add today", if (a == null) MW.Rose else MW.Dim, if (f.type == "income") MW.Accent else MW.Amber,
                 trailing = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(s.money(f.amount), style = TextStyle(color = if (f.type == "income") MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
+                        Text(s.money(f.amount), style = MwTs(color = if (f.type == "income") MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
                         Spacer(Modifier.width(10.dp))
-                        Box(Modifier.size(34.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.08f)).clickable { store.deleteItem("favs", f.id) }, contentAlignment = Alignment.Center) { MwIcon("trash", MW.Dim, 16.dp) }
+                        Box(Modifier.size(34.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.08f)).clickable { store.deleteItem("favs", f.id) }, contentAlignment = Alignment.Center) { MwIcon("trash", MW.Dim, 16.dp) }
                     }
                 },
             ) {
@@ -652,20 +652,20 @@ fun BankScreen(s: AppState, store: Store, startId: String?, onRecord: (type: Str
                 val hot = if (ok) MW.Mint else Color(0xFFFF8FA0)
                 val tag = when (c.verdict) { "ok" -> "SAFE TO SPEND"; "locked" -> "ALL YOURS"; "add" -> "ADD TO STAY SAFE"; else -> "FEE LIKELY" }
                 Column(
-                    Modifier.fillMaxWidth().glass(RoundedCornerShape(30.dp), tint)
-                        .border(1.5.dp, Brush.linearGradient(listOf(hot.copy(alpha = 0.9f), hot.copy(alpha = 0.15f))), RoundedCornerShape(30.dp))
+                    Modifier.fillMaxWidth().glass(MwShape(30.dp), tint)
+                        .border(1.5.dp, Brush.linearGradient(listOf(hot.copy(alpha = 0.9f), hot.copy(alpha = 0.15f))), MwShape(30.dp))
                         .background(Brush.verticalGradient(listOf(hot.copy(alpha = 0.22f), Color.Transparent))).padding(22.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.clip(RoundedCornerShape(99.dp)).background(hot.copy(alpha = 0.28f)).border(1.dp, hot.copy(alpha = 0.7f), RoundedCornerShape(99.dp)).padding(horizontal = 12.dp, vertical = 5.dp)) {
-                            Text(tag, style = TextStyle(color = hot, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp))
+                        Box(Modifier.clip(MwShape(99.dp)).background(hot.copy(alpha = 0.28f)).border(1.dp, hot.copy(alpha = 0.7f), MwShape(99.dp)).padding(horizontal = 12.dp, vertical = 5.dp)) {
+                            Text(tag, style = MwTs(color = hot, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp))
                         }
                         Spacer(Modifier.weight(1f))
-                        Text(vt, style = TextStyle(color = MW.Dim, fontSize = 12.sp, fontWeight = FontWeight.SemiBold))
+                        Text(vt, style = MwTs(color = MW.Dim, fontSize = 12.sp, fontWeight = FontWeight.SemiBold))
                     }
                     Text(main, style = numStyle(52f, hot))
-                    Text(highlightMoney(line, s.settings.cur, hot), style = TextStyle(color = MW.Dim, fontSize = 14.5.sp, lineHeight = 21.sp))
+                    Text(highlightMoney(line, s.settings.cur, hot), style = MwTs(color = MW.Dim, fontSize = 14.5.sp, lineHeight = 21.sp))
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     listOf(
@@ -674,31 +674,31 @@ fun BankScreen(s: AppState, store: Store, startId: String?, onRecord: (type: Str
                         "Lowest to keep" to s.money(c.required),
                     ).forEach { (l, v) ->
                         val key = l == "Lowest to keep"
-                        Column(Modifier.weight(1f).glass(RoundedCornerShape(20.dp), if (key) MW.Amber else null).then(if (key) Modifier.border(1.dp, MW.Amber.copy(alpha = 0.6f), RoundedCornerShape(20.dp)) else Modifier).padding(12.dp)) {
-                            Text(l, maxLines = 2, style = TextStyle(color = if (key) MW.Amber else MW.Dim, fontSize = 11.sp, lineHeight = 13.sp, fontWeight = if (key) FontWeight.Bold else FontWeight.Normal))
-                            Spacer(Modifier.height(4.dp)); Text(v, maxLines = 1, style = TextStyle(color = if (key) MW.Amber else Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
+                        Column(Modifier.weight(1f).glass(MwShape(20.dp), if (key) MW.Amber else null).then(if (key) Modifier.border(1.dp, MW.Amber.copy(alpha = 0.6f), MwShape(20.dp)) else Modifier).padding(12.dp)) {
+                            Text(l, maxLines = 2, style = MwTs(color = if (key) MW.Amber else MW.Dim, fontSize = 11.sp, lineHeight = 13.sp, fontWeight = if (key) FontWeight.Bold else FontWeight.Normal))
+                            Spacer(Modifier.height(4.dp)); Text(v, maxLines = 1, style = MwTs(color = if (key) MW.Amber else Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"))
                         }
                     }
                 }
                 val n = (c.period.end - c.period.start + 1).toInt()
                 val elapsed = (todayDn() - c.period.start + 1).toInt().coerceIn(1, n)
-                Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(fmtDate(fromDn(c.period.start)) + " to " + fmtDate(fromDn(c.period.end)), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
-                    Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.14f))) {
-                        Box(Modifier.fillMaxWidth(elapsed.toFloat() / n).height(8.dp).clip(CircleShape).background(if (ok) MW.Accent else Color(0xFFFF6B81)))
+                Column(Modifier.fillMaxWidth().glass(MwShape(24.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(fmtDate(fromDn(c.period.start)) + " to " + fmtDate(fromDn(c.period.end)), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                    Box(Modifier.fillMaxWidth().height(8.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.14f))) {
+                        Box(Modifier.fillMaxWidth(elapsed.toFloat() / n).height(8.dp).clip(MwCircle).background(if (ok) MW.Accent else Color(0xFFFF6B81)))
                     }
-                    Text("Day $elapsed of $n · ${c.daysLeft - 1} days left · charge if below: " + s.money(cfg.fee), style = TextStyle(color = MW.Dim, fontSize = 12.5.sp))
+                    Text("Day $elapsed of $n · ${c.daysLeft - 1} days left · charge if below: " + s.money(cfg.fee), style = MwTs(color = MW.Dim, fontSize = 12.5.sp))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     GhostButton("Money in", Modifier.weight(1f), MW.Mint, "plus") { onRecord("income", a.id) }
                     GhostButton("Money out", Modifier.weight(1f), MW.Rose, "minus") { onRecord("expense", a.id) }
                     GhostButton("Check", Modifier.weight(1f), MW.Amber, "check") { onRecord("check", a.id) }
                 }
-                if (cfg.otherFees.isNotEmpty()) Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (cfg.otherFees.isNotEmpty()) Column(Modifier.fillMaxWidth().glass(MwShape(24.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Lbl("Other fees (reference)")
-                    cfg.otherFees.forEach { f -> Row { Text(f.n, Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 14.sp)); Text(s.money(f.a), style = TextStyle(color = MW.Dim, fontSize = 14.sp, fontFeatureSettings = "tnum")) } }
+                    cfg.otherFees.forEach { f -> Row { Text(f.n, Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 14.sp)); Text(s.money(f.a), style = MwTs(color = MW.Dim, fontSize = 14.sp, fontFeatureSettings = "tnum")) } }
                 }
-                Text("Estimate only. Banks rarely publish their exact method, so confirm the rule type and period with your bank. Before your first entry the balance counts as zero, and a negative balance counts as zero.", style = TextStyle(color = MW.Faint, fontSize = 12.sp, lineHeight = 17.sp))
+                Text("Estimate only. Banks rarely publish their exact method, so confirm the rule type and period with your bank. Before your first entry the balance counts as zero, and a negative balance counts as zero.", style = MwTs(color = MW.Faint, fontSize = 12.sp, lineHeight = 17.sp))
             }
             GhostButton("Add another bank account", Modifier.fillMaxWidth(), icon = "plus") { addBank = true }
         }

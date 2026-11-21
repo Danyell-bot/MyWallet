@@ -88,12 +88,12 @@ fun BankChart(s: AppState, a: Account, c: BankInfo) {
     val vmax = niceMax(max(c.min, max(1.0, vals.filter { !it.isNaN() }.maxOrNull() ?: 1.0)) * 1.08)
     var sel by remember(a.id) { mutableStateOf<Int?>(null) }
 
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Lbl("Daily balance · " + shortDate(p.start) + " to " + shortDate(p.end))
         val i = sel
         Text(
             if (i != null && !vals[i].isNaN()) shortDate(p.start + i) + ": " + s.money(vals[i]) + (if (isAvg) " · avg " + s.money(avgs[i]) else "") else "Tap a bar to see that day",
-            style = TextStyle(color = if (i != null) Color.White else MW.Faint, fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+            style = MwTs(color = if (i != null) Color.White else MW.Faint, fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
         )
         Canvas(
             Modifier.fillMaxWidth().height(230.dp).pointerInput(n) {
@@ -142,11 +142,11 @@ fun BankChart(s: AppState, a: Account, c: BankInfo) {
             drawContext.canvas.nativeCanvas.drawText(shortDate(p.end), size.width - mr, size.height - 6.dp.toPx(), paint)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            @Composable fun key(col: Color, label: String) { Box(Modifier.size(9.dp).clip(CircleShape).background(col)); Spacer(Modifier.size(5.dp)); Text(label, style = TextStyle(color = MW.Dim, fontSize = 11.5.sp)) }
+            @Composable fun key(col: Color, label: String) { Box(Modifier.size(9.dp).clip(MwCircle).background(col)); Spacer(Modifier.size(5.dp)); Text(label, style = MwTs(color = MW.Dim, fontSize = 11.5.sp)) }
             key(MW.Accent, "Balance"); key(Color(0xFFFF8FA0), "Below min")
             if (isAvg) key(Color(0xFFFFE08A), "Average")
         }
-        Text("Minimum " + s.money(c.min) + " (dashed line)", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+        Text("Minimum " + s.money(c.min) + " (dashed line)", style = MwTs(color = MW.Faint, fontSize = 12.sp))
     }
 }
 
@@ -158,9 +158,9 @@ fun BankWhatIf(s: AppState, a: Account, c: BankInfo) {
     var dir by remember { mutableStateOf("out") }
     var amt by remember { mutableStateOf("") }
     var date by remember { mutableStateOf(todayStr()) }
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("What if", style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
-        Text("Type an amount and see where this period would end up if nothing else changes.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 18.sp))
+    Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("What if", style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
+        Text("Type an amount and see where this period would end up if nothing else changes.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 18.sp))
         FChips("", listOf(opt("out", "Spend"), opt("in", "Deposit")), dir, { dir = it }, scroll = false)
         FText("Amount", amt, { amt = it }, "0", decimal = true)
         FDate("On date", date, { date = it })
@@ -181,22 +181,22 @@ fun BankWhatIf(s: AppState, a: Account, c: BankInfo) {
     }
     val gap = measure - c.min
     val hot = if (ok) MW.Mint else Color(0xFFFF8FA0)
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp), if (ok) MW.Accent else Color(0xFFFF6B81)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxWidth().glass(MwShape(26.dp), if (ok) MW.Accent else Color(0xFFFF6B81)).padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Lbl(label, Modifier.weight(1f))
-            Box(Modifier.clip(RoundedCornerShape(99.dp)).background(hot.copy(alpha = 0.25f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                Text(if (ok) "Stays above minimum" else "Falls below minimum", style = TextStyle(color = hot, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold))
+            Box(Modifier.clip(MwShape(99.dp)).background(hot.copy(alpha = 0.25f)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                Text(if (ok) "Stays above minimum" else "Falls below minimum", style = MwTs(color = hot, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold))
             }
         }
         Text(s.money(measure), style = numStyle(40f, hot))
         Text(
             if (ok) s.money(kotlin.math.abs(gap)) + " above the " + s.money(c.min) + " minimum." else s.money(kotlin.math.abs(gap)) + " under the " + s.money(c.min) + " minimum. A " + s.money(cfg.fee) + " charge may apply.",
-            style = TextStyle(color = MW.Dim, fontSize = 13.5.sp, lineHeight = 19.sp),
+            style = MwTs(color = MW.Dim, fontSize = 13.5.sp, lineHeight = 19.sp),
         )
-        Row { Text("Balance on " + shortDate(dd), Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 14.sp)); Text(s.money(c.cur + signed), style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }
+        Row { Text("Balance on " + shortDate(dd), Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 14.sp)); Text(s.money(c.cur + signed), style = MwTs(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) }
         if (!ok && cfg.rule != "daily") {
             val fix = if (cfg.rule == "avg") ceil(kotlin.math.abs(gap) * nDays / (p.end - dd + 1)) else kotlin.math.abs(gap)
-            Row { Text("Deposit to fix it", Modifier.weight(1f), style = TextStyle(color = MW.Amber, fontSize = 14.sp, fontWeight = FontWeight.Bold)); Text(s.money(fix), style = TextStyle(color = MW.Amber, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)) }
+            Row { Text("Deposit to fix it", Modifier.weight(1f), style = MwTs(color = MW.Amber, fontSize = 14.sp, fontWeight = FontWeight.Bold)); Text(s.money(fix), style = MwTs(color = MW.Amber, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)) }
         }
     }
 }
@@ -219,8 +219,8 @@ fun BankEntries(s: AppState, a: Account, onRecord: (String, String) -> Unit, onE
         val icon = if (r.type == "transfer") "⇄" else if (r.type == "check") "⚖" else s.cat(r.cat)?.icon ?: if (incoming) "+" else "−"
         ItemRow(
             icon, fmtDate(r.date), tag + (if (r.note.isNotBlank()) " · " + r.note else ""), MW.Dim, if (r.type == "check") MW.Amber else if (incoming) MW.Accent else Color.White,
-            trailing = { Text((if (r.type == "check") "= " else "") + s.money(v), style = TextStyle(color = if (r.type == "check") MW.Amber else if (incoming) MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) },
+            trailing = { Text((if (r.type == "check") "= " else "") + s.money(v), style = MwTs(color = if (r.type == "check") MW.Amber else if (incoming) MW.Mint else Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)) },
         ) { onEdit(r) }
     }
-    if (es.size > 80) Text("Showing the latest 80 of ${es.size}. Older ones are in Search.", style = TextStyle(color = MW.Faint, fontSize = 12.sp))
+    if (es.size > 80) Text("Showing the latest 80 of ${es.size}. Older ones are in Search.", style = MwTs(color = MW.Faint, fontSize = 12.sp))
 }

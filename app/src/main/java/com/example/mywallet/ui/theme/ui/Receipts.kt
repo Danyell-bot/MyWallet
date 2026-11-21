@@ -67,10 +67,10 @@ private fun decodePhoto(b: ByteArray?, sample: Int): ImageBitmap? = try {
 @Composable
 private fun Thumb(s: AppState, store: Store, r: Rec, modifier: Modifier, onClick: () -> Unit) {
     val bmp by produceState<ImageBitmap?>(null, r.id) { value = thumbCache.get(r.id) ?: withContext(Dispatchers.Default) { decodePhoto(store.photoBytes(r.id), 4) }?.also { thumbCache.put(r.id, it) } }
-    Box(modifier.aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.08f)).clickable { onClick() }) {
+    Box(modifier.aspectRatio(1f).clip(MwShape(18.dp)).background(Color.White.copy(alpha = 0.08f)).clickable { onClick() }) {
         bmp?.let { Image(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
         Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)))).padding(horizontal = 8.dp, vertical = 6.dp)) {
-            Text(s.money(r.amount), maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold))
+            Text(s.money(r.amount), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold))
         }
     }
 }
@@ -86,14 +86,14 @@ fun ReceiptsScreen(s: AppState, store: Store, onEdit: (Rec) -> Unit, onClose: ()
         CompositionLocalProvider(LocalHaze provides haze) {
             Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 22.dp)) {
                 Row(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(40.dp).glass(CircleShape).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 22.dp, weight = 2f) }
-                    Text("Receipts", Modifier.weight(1f), textAlign = TextAlign.Center, style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+                    Box(Modifier.size(40.dp).glass(MwCircle).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 22.dp, weight = 2f) }
+                    Text("Receipts", Modifier.weight(1f), textAlign = TextAlign.Center, style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
                     Spacer(Modifier.size(40.dp))
                 }
                 if (list.isEmpty()) {
                     EmptyCard("image", "No receipts yet.\nAdd a photo when you save a record and it shows up here.")
                 } else {
-                    Text("${list.size} receipt${if (list.size == 1) "" else "s"}", Modifier.padding(bottom = 10.dp), style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold))
+                    Text("${list.size} receipt${if (list.size == 1) "" else "s"}", Modifier.padding(bottom = 10.dp), style = MwTs(color = MW.Dim, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold))
                     LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(list.chunked(3)) { row ->
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -114,9 +114,9 @@ fun ReceiptsScreen(s: AppState, store: Store, onEdit: (Rec) -> Unit, onClose: ()
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     full?.let { Image(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Fit) }
                 }
-                Column(Modifier.fillMaxWidth().glassDark(RoundedCornerShape(22.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(r.note.ifBlank { s.cat(r.cat)?.name ?: "Record" }, style = TextStyle(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
-                    Text(s.money(r.amount) + " · " + fmtDate(r.date) + (s.acc(r.acct)?.let { " · " + it.name } ?: ""), style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+                Column(Modifier.fillMaxWidth().glassDark(MwShape(22.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(r.note.ifBlank { s.cat(r.cat)?.name ?: "Record" }, style = MwTs(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
+                    Text(s.money(r.amount) + " · " + fmtDate(r.date) + (s.acc(r.acct)?.let { " · " + it.name } ?: ""), style = MwTs(color = MW.Dim, fontSize = 13.sp))
                 }
                 BigButton("Open record", icon = "edit") { val x = r; view = null; onEdit(x) }
                 GhostButton("Close", Modifier.fillMaxWidth()) { view = null }

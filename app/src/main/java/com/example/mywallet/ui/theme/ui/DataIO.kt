@@ -212,7 +212,7 @@ private fun CsvImportForm(s: AppState, store: Store, onClose: () -> Unit) {
     FormPanel("Import from CSV", onClose) {
         val r = rows
         if (r == null) {
-            Text("Choose a CSV file from your bank, a spreadsheet or another money app. Files made by MyWallet work too.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+            Text("Choose a CSV file from your bank, a spreadsheet or another money app. Files made by MyWallet work too.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
             BigButton("Choose a file", icon = "file") { pick.launch(arrayOf("text/csv", "text/comma-separated-values", "text/plain", "application/vnd.ms-excel", "*/*")) }
             GhostButton("Paste from clipboard", Modifier.fillMaxWidth(), icon = "copy") {
                 val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -233,17 +233,17 @@ private fun CsvImportForm(s: AppState, store: Store, onClose: () -> Unit) {
             if (m[5] < 0) FChips("Put them in account", s.accounts.filter { !it.ignored }.map { opt(it.id, it.name, it.icon) }, defAcct, { defAcct = it })
             val ok = m[0] >= 0 && m[1] >= 0
             val plan = remember(r, m.toList(), ord, posIs, defAcct) { if (ok) buildPlan(s, store, r, m, ord, posIs, defAcct) else null }
-            Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(20.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (plan == null) Text("Pick the date and amount columns.", style = TextStyle(color = MW.Dim, fontSize = 13.sp))
+            Column(Modifier.fillMaxWidth().glass(MwShape(20.dp)).padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (plan == null) Text("Pick the date and amount columns.", style = MwTs(color = MW.Dim, fontSize = 13.sp))
                 else {
-                    Text("${plan.recs.size} record" + (if (plan.recs.size == 1) "" else "s") + " ready", style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
+                    Text("${plan.recs.size} record" + (if (plan.recs.size == 1) "" else "s") + " ready", style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
                     val extra = ArrayList<String>()
                     if (plan.recs.isNotEmpty()) extra.add(fmtDate(plan.first) + " to " + fmtDate(plan.last))
                     if (plan.newAcc.isNotEmpty()) extra.add("${plan.newAcc.size} new account" + (if (plan.newAcc.size == 1) "" else "s"))
                     if (plan.newCat.isNotEmpty()) extra.add("${plan.newCat.size} new categor" + (if (plan.newCat.size == 1) "y" else "ies"))
                     if (plan.dupes > 0) extra.add("${plan.dupes} already here, skipped")
                     if (plan.skipped > 0) extra.add("${plan.skipped} rows could not be read")
-                    if (extra.isNotEmpty()) Text(extra.joinToString(" · "), style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
+                    if (extra.isNotEmpty()) Text(extra.joinToString(" · "), style = MwTs(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -305,19 +305,19 @@ fun BackupScreen(s: AppState, store: Store, onClose: () -> Unit) {
     val age = if (s.lastBackup > 0) ((System.currentTimeMillis() - s.lastBackup) / 86_400_000.0).toInt() else -1
 
     ToolShell("Backup and export", onClose) {
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Back up", style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Back up", style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
             Text(
                 (if (age < 0) "You have not made a backup yet." else if (age == 0) "Last backup: today." else "Last backup: $age day" + (if (age == 1) "" else "s") + " ago.") +
                     " Your data lives on this phone only. Backups are small (compressed) and include receipt photos.",
-                style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
+                style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
             )
             BigButton("Save backup file", icon = "cloud") { savePw = ""; askPw = true }
             GhostButton("Restore from a backup", Modifier.fillMaxWidth(), icon = "download") { pickJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream", "*/*")) }
         }
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Spreadsheet (CSV)", style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
-            Text("Export every record to open in Excel or Google Sheets, or bring in records from your bank or another app.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Spreadsheet (CSV)", style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+            Text("Export every record to open in Excel or Google Sheets, or bring in records from your bank or another app.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 GhostButton("Save CSV", Modifier.weight(1f), icon = "file") {
                     if (s.recs.isEmpty()) tst(ctx, "Nothing to export") else exportCsv.launch("mywallet-records-" + todayStr() + ".csv")
@@ -330,18 +330,18 @@ fun BackupScreen(s: AppState, store: Store, onClose: () -> Unit) {
             GhostButton("Import from CSV", Modifier.fillMaxWidth(), icon = "upload") { csvImport = true }
         }
         var stm by remember { mutableStateOf(todayStr().take(7)) }
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Monthly statement (PDF)", style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Monthly statement (PDF)", style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
             MonthNav(stm, { stm = it })
             GhostButton("Make PDF", Modifier.fillMaxWidth(), icon = "file") { printStatement(ctx, s, stm) }
         }
         var tidy by remember { mutableStateOf(0) }
-        Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Storage", style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+        Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Storage", style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
             Text(
                 "Data: ${store.fileSize() / 1024} KB \u00B7 ${store.photoCount()} receipt photo" + (if (store.photoCount() == 1) "" else "s") + " (${store.photoBytesTotal() / 1024} KB)" +
                     "\nEverything is stored compressed and encrypted on this phone.",
-                style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
+                style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp),
             )
             GhostButton("Delete all my data", Modifier.fillMaxWidth(), Color(0xFFFF8FA0), "trash") { wipe = true }
             GhostButton("Clean up unused photos" + (if (tidy > 0) " ($tidy removed)" else ""), Modifier.fillMaxWidth(), icon = "trash") { tidy += store.cleanPhotos(); tst(ctx, "Done") }
@@ -351,14 +351,14 @@ fun BackupScreen(s: AppState, store: Store, onClose: () -> Unit) {
     if (csvImport) CsvImportForm(s, store) { csvImport = false }
     if (wipe) ConfirmDialog("Delete all your data?", "Every record, account, receipt photo and setting is erased from this phone. Save a backup first if you may want it back.", "Delete everything", { wipe = false; store.resetAll() }, { wipe = false })
     if (askPw) FormPanel("Save a backup", { askPw = false }) {
-        Text("Add a password to lock the backup file, or leave it empty. If you forget the password the backup cannot be opened, not even by me.", style = TextStyle(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
+        Text("Add a password to lock the backup file, or leave it empty. If you forget the password the backup cannot be opened, not even by me.", style = MwTs(color = MW.Dim, fontSize = 13.sp, lineHeight = 19.sp))
         FText("Password (optional)", savePw, { savePw = it }, "Leave empty for no password")
         BigButton("Choose where to save", icon = "cloud") { askPw = false; exportJson.launch("mywallet-backup-" + todayStr() + ".mwbackup") }
     }
     restoreBytes?.let { bytes ->
         val enc = BackupCrypto.isEncrypted(bytes)
         FormPanel("Replace your data?", { restoreBytes = null }) {
-            Text("Everything in this app is replaced by the backup. Back up first if you want to keep what you have now.", style = TextStyle(color = MW.Dim, fontSize = 13.5.sp, lineHeight = 19.sp))
+            Text("Everything in this app is replaced by the backup. Back up first if you want to keep what you have now.", style = MwTs(color = MW.Dim, fontSize = 13.5.sp, lineHeight = 19.sp))
             if (enc) FText("Backup password", restorePw, { restorePw = it }, "Password")
             BigButton("Replace my data", color = Color(0xFFFF6B81), textColor = Color.White) {
                 val err = store.importBackupBytes(bytes, restorePw)
@@ -384,7 +384,7 @@ fun SplitForm(s: AppState, store: Store, onClose: () -> Unit) {
     var acct by remember { mutableStateOf(s.accounts.firstOrNull { !it.ignored }?.id ?: "") }
     var paidBy by remember { mutableStateOf("me") }
     FormPanel("Split a bill", onClose) {
-        Text("Enter the total and how many people share it. Your share becomes an expense, and the rest becomes debts you can track.", style = TextStyle(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
+        Text("Enter the total and how many people share it. Your share becomes an expense, and the rest becomes debts you can track.", style = MwTs(color = MW.Dim, fontSize = 12.5.sp, lineHeight = 18.sp))
         FText("Total bill", total, { total = it }, "0", decimal = true)
         FText("How many people (including you)", people, { people = it.filter { c -> c.isDigit() }.take(2) }, "2")
         FText("Names, separated by commas (optional)", names, { names = it }, "Mika, Ben")

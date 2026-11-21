@@ -41,7 +41,7 @@ object MW {
     val Text = Color.White
     val Dim = Color.White.copy(alpha = 0.78f)
     val Faint = Color.White.copy(alpha = 0.6f)
-    val Font: FontFamily = FontFamily.Default // swap for Manrope once you add it to res/font
+    val Font: FontFamily get() = MwStyle.font ?: FontFamily.Default
 }
 
 /** The shared blur source: the background scene registers it, every glass panel reads it. */
@@ -58,7 +58,8 @@ private fun Modifier.frost(): Modifier {
 
 /** Frosted-glass look: soft white gradient, thin bright border. */
 @Composable
-fun Modifier.glass(shape: Shape = RoundedCornerShape(24.dp), tint: Color? = null): Modifier {
+fun Modifier.glass(shape: Shape = MwShape(24.dp), tint: Color? = null): Modifier {
+    if (!MwStyle.isClassic) return themedPanel(shape, tint, false)
     val top = tint?.copy(alpha = 0.42f) ?: Color.White.copy(alpha = 0.14f)
     return this
         .clip(shape)
@@ -69,7 +70,8 @@ fun Modifier.glass(shape: Shape = RoundedCornerShape(24.dp), tint: Color? = null
 }
 
 /** Same look without the blur: much cheaper, used for long lists and many small tiles. */
-fun Modifier.glassLite(shape: Shape = RoundedCornerShape(24.dp), tint: Color? = null): Modifier {
+fun Modifier.glassLite(shape: Shape = MwShape(24.dp), tint: Color? = null): Modifier {
+    if (!MwStyle.isClassic) return themedPanel(shape, tint, false)
     val top = tint?.copy(alpha = 0.42f) ?: Color.White.copy(alpha = 0.14f)
     return this
         .clip(shape)
@@ -80,7 +82,7 @@ fun Modifier.glassLite(shape: Shape = RoundedCornerShape(24.dp), tint: Color? = 
 
 /** Darker glass for the tab bar and the dock so they stay readable over the background. */
 @Composable
-fun Modifier.glassDark(shape: Shape): Modifier = this
+fun Modifier.glassDark(shape: Shape): Modifier = if (!MwStyle.isClassic) themedPanel(shape, null, true) else this
     .clip(shape)
     .frost()
     .background(Brush.linearGradient(listOf(Color(0xFF080C18).copy(alpha = 0.66f), Color(0xFF080C18).copy(alpha = 0.44f))))
@@ -94,20 +96,20 @@ fun GlassCard(
     padding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(modifier.glass(RoundedCornerShape(radius), tint).padding(padding), content = content)
+    Column(modifier.glass(MwShape(radius), tint).padding(padding), content = content)
 }
 
 @Composable
 fun Lbl(text: String, modifier: Modifier = Modifier, color: Color = MW.Dim) {
     Text(
-        text.uppercase(), modifier,
-        style = TextStyle(color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.13.em),
+        (if (MwStyle.cur.id == "cat") "\uD83D\uDC3E " else "") + text.uppercase(), modifier,
+        style = MwTs(color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.13.em),
     )
 }
 
-fun numStyle(size: Float, color: Color = Color.White) = TextStyle(
+fun numStyle(size: Float, color: Color = Color.White) = MwTs(
     color = color, fontSize = size.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.035).em,
-    fontFeatureSettings = "tnum", fontFamily = MW.Font,
+    fontFeatureSettings = "tnum",
 )
 
 @Composable

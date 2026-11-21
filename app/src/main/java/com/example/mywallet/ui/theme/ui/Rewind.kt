@@ -108,10 +108,10 @@ private fun Reveal(wait: Int, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun Kicker(t: String) = Text(t.uppercase(), style = TextStyle(color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp))
+private fun Kicker(t: String) = Text(t.uppercase(), style = MwTs(color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp))
 
 @Composable
-private fun Sub(t: String) = Text(t, style = TextStyle(color = Color.White.copy(alpha = 0.92f), fontSize = 18.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold))
+private fun Sub(t: String) = Text(t, style = MwTs(color = Color.White.copy(alpha = 0.92f), fontSize = 18.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold))
 
 @Composable
 fun RecapScreen(s: AppState, onClose: () -> Unit) {
@@ -235,14 +235,14 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                     "intro" -> {
                         Kicker("Your")
                         Spacer(Modifier.height(8.dp))
-                        Text(monthLabel(ym).substringBefore(" "), style = TextStyle(color = Color.White, fontSize = 60.sp, fontWeight = FontWeight.Black, letterSpacing = (-1.5).sp))
-                        Text("REWIND", style = TextStyle(color = Color.White.copy(alpha = 0.9f), fontSize = 38.sp, fontWeight = FontWeight.Black, letterSpacing = 8.sp))
+                        Text(monthLabel(ym).substringBefore(" "), style = MwTs(color = Color.White, fontSize = 60.sp, fontWeight = FontWeight.Black, letterSpacing = (-1.5).sp))
+                        Text("REWIND", style = MwTs(color = Color.White.copy(alpha = 0.9f), fontSize = 38.sp, fontWeight = FontWeight.Black, letterSpacing = 8.sp))
                         Spacer(Modifier.height(22.dp))
                         Reveal(500) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(Modifier.size(44.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.18f)).clickable { ym = ymAdd(ym, -1) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
-                                Text(monthLabel(ym), Modifier.padding(horizontal = 16.dp), style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold))
-                                if (ym < nowYm) Box(Modifier.size(44.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.18f)).clickable { ym = ymAdd(ym, 1) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
+                                Box(Modifier.size(44.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.18f)).clickable { ym = ymAdd(ym, -1) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, weight = 2f) }
+                                Text(monthLabel(ym), Modifier.padding(horizontal = 16.dp), style = MwTs(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold))
+                                if (ym < nowYm) Box(Modifier.size(44.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.18f)).clickable { ym = ymAdd(ym, 1) }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 20.dp, Modifier.rotate(180f), weight = 2f) }
                             }
                         }
                         Spacer(Modifier.height(18.dp))
@@ -251,7 +251,7 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                     "empty" -> {
                         Kicker("Quiet month")
                         Spacer(Modifier.height(10.dp))
-                        Text("Nothing spent", style = TextStyle(color = Color.White, fontSize = 46.sp, fontWeight = FontWeight.Black))
+                        Text("Nothing spent", style = MwTs(color = Color.White, fontSize = 46.sp, fontWeight = FontWeight.Black))
                         Spacer(Modifier.height(10.dp))
                         Reveal(400) { Sub("There are no expenses in " + monthLabel(ym) + ". Pick another month from the first slide.") }
                         Spacer(Modifier.height(24.dp))
@@ -283,12 +283,12 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     GlyphIcon(s.cat(e.key)?.icon ?: "🏷", Color.White, 22.dp)
                                     Spacer(Modifier.width(10.dp))
-                                    Text(s.cat(e.key)?.name ?: "No category", Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold))
-                                    Text("${Math.round(share * 100)}%", style = TextStyle(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
+                                    Text(s.cat(e.key)?.name ?: "No category", Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold))
+                                    Text("${Math.round(share * 100)}%", style = MwTs(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
                                 }
                                 Spacer(Modifier.height(8.dp))
-                                Box(Modifier.fillMaxWidth().height(10.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f))) {
-                                    Box(Modifier.fillMaxWidth(f.coerceAtLeast(0.001f)).height(10.dp).clip(CircleShape).background(Color.White))
+                                Box(Modifier.fillMaxWidth().height(10.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f))) {
+                                    Box(Modifier.fillMaxWidth(f.coerceAtLeast(0.001f)).height(10.dp).clip(MwCircle).background(Color.White))
                                 }
                             }
                         }
@@ -297,11 +297,11 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                         Kicker("Your top category")
                         Spacer(Modifier.height(20.dp))
                         val pop by animateFloatAsState(1f, tween(700, easing = FastOutSlowInEasing), label = "pop")
-                        Box(Modifier.size(110.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(110.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
                             GlyphIcon(s.cat(top?.key ?: "")?.icon ?: "🏷", Color.White, (56 * pop).dp)
                         }
                         Spacer(Modifier.height(18.dp))
-                        Text(s.cat(top?.key ?: "")?.name ?: "No category", maxLines = 2, style = TextStyle(color = Color.White, fontSize = 44.sp, fontWeight = FontWeight.Black, lineHeight = 48.sp))
+                        Text(s.cat(top?.key ?: "")?.name ?: "No category", maxLines = 2, style = MwTs(color = Color.White, fontSize = 44.sp, fontWeight = FontWeight.Black, lineHeight = 48.sp))
                         Spacer(Modifier.height(10.dp))
                         Reveal(700) { Sub(s.money(top?.value ?: 0.0) + " · " + (if (ex > 0 && top != null) Math.round(top.value / ex * 100) else 0) + "% of everything you spent.") }
                     }
@@ -334,9 +334,9 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                             LaunchedEffect(Unit) { delay(300L + n * 350L); go = true }
                             val f by animateFloatAsState(if (go) (v / mx).toFloat() else 0f, tween(1000, easing = FastOutSlowInEasing), label = "flow")
                             Column(Modifier.padding(bottom = 18.dp)) {
-                                Row { Text(label, Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)); Text(s.money(v), style = TextStyle(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)) }
+                                Row { Text(label, Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)); Text(s.money(v), style = MwTs(color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)) }
                                 Spacer(Modifier.height(8.dp))
-                                Box(Modifier.fillMaxWidth().height(18.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.2f))) { Box(Modifier.fillMaxWidth(f.coerceAtLeast(0.001f)).height(18.dp).clip(CircleShape).background(col)) }
+                                Box(Modifier.fillMaxWidth().height(18.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.2f))) { Box(Modifier.fillMaxWidth(f.coerceAtLeast(0.001f)).height(18.dp).clip(MwCircle).background(col)) }
                             }
                         }
                         Reveal(1300) { Sub(if (inc >= ex) "You kept ${s.money(inc - ex)}. Nice!" else "You spent ${s.money(ex - inc)} more than came in.") }
@@ -344,8 +344,8 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
                     else -> {
                         Kicker("That is your " + monthLabel(ym).substringBefore(" "))
                         Spacer(Modifier.height(16.dp))
-                        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Color.White.copy(alpha = 0.16f)).padding(22.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                            @Composable fun line(a: String, b: String) = Row { Text(a, Modifier.weight(1f), style = TextStyle(color = Color.White.copy(alpha = 0.85f), fontSize = 15.sp)); Text(b, maxLines = 1, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
+                        Column(Modifier.fillMaxWidth().clip(MwShape(28.dp)).background(Color.White.copy(alpha = 0.16f)).padding(22.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            @Composable fun line(a: String, b: String) = Row { Text(a, Modifier.weight(1f), style = MwTs(color = Color.White.copy(alpha = 0.85f), fontSize = 15.sp)); Text(b, maxLines = 1, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
                             line("Spent", s.money(ex)); line("Money in", s.money(inc))
                             line("Top category", s.cat(top?.key ?: "")?.name ?: "None"); line("No-spend days", quiet.toString())
                             if (diff != null) line("vs last month", (if (diff > 0) "+" else "") + "$diff%")
@@ -364,18 +364,18 @@ fun RecapScreen(s: AppState, onClose: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 slides.forEachIndexed { i, _ ->
                     val f = if (i < idx) 1f else if (i == idx) (if (i == slides.lastIndex) 1f else prog.value) else 0f
-                    Box(Modifier.weight(1f).height(3.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.3f))) {
+                    Box(Modifier.weight(1f).height(3.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.3f))) {
                         Box(Modifier.fillMaxWidth(f.coerceIn(0.001f, 1f)).height(3.dp).background(Color.White))
                     }
                 }
             }
             Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("Rewind · " + monthLabel(ym), Modifier.weight(1f), style = TextStyle(color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp, fontWeight = FontWeight.Bold))
-                Box(Modifier.size(34.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.25f)).clickable {
+                Text("Rewind · " + monthLabel(ym), Modifier.weight(1f), style = MwTs(color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp, fontWeight = FontWeight.Bold))
+                Box(Modifier.size(34.dp).clip(MwCircle).background(Color.Black.copy(alpha = 0.25f)).clickable {
                     sound = !sound; ctx.getSharedPreferences("mw_prefs", 0).edit().putBoolean("sfx", sound).apply()
                 }, contentAlignment = Alignment.Center) { MwIcon(if (sound) "volume" else "volumeoff", Color.White, 16.dp, weight = 2f) }
                 Spacer(Modifier.width(8.dp))
-                Box(Modifier.size(34.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.25f)).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("close", Color.White, 16.dp, weight = 2f) }
+                Box(Modifier.size(34.dp).clip(MwCircle).background(Color.Black.copy(alpha = 0.25f)).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("close", Color.White, 16.dp, weight = 2f) }
             }
         }
     }

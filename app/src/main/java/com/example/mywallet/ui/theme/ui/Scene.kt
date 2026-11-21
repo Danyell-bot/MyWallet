@@ -60,6 +60,7 @@ val LocalScenePaused = androidx.compose.runtime.compositionLocalOf { false }
 
 @Composable
 fun SceneBackground(page: Float, modifier: Modifier = Modifier) {
+    if (!MwStyle.isClassic) { StyleScene(page, modifier); return }
     val paused = LocalScenePaused.current
     val t by rememberInfiniteTransition(label = "aurora").animateFloat(
         0f, (2 * PI).toFloat(),

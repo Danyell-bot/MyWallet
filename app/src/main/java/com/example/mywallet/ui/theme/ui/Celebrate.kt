@@ -133,12 +133,12 @@ fun StreakCelebration(from: Int, to: Int, onDone: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 "NEW DAY", Modifier.graphicsLayer { alpha = title.value; translationY = (1f - title.value) * 24f },
-                style = TextStyle(color = Color(0xFFFFD27A), fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 8.sp),
+                style = MwTs(color = Color(0xFFFFD27A), fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 8.sp),
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 "Your streak is back on", Modifier.graphicsLayer { alpha = title.value },
-                style = TextStyle(color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                style = MwTs(color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
             )
             Spacer(Modifier.height(18.dp))
             Box(Modifier.size(230.dp), contentAlignment = Alignment.Center) {
@@ -160,7 +160,7 @@ fun StreakCelebration(from: Int, to: Int, onDone: () -> Unit) {
             Row(horizontalArrangement = Arrangement.Center) {
                 for (i in 0 until len) RollDigit(a[i], b[i], digits[i].value)
             }
-            Text("day streak", style = TextStyle(color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp))
+            Text("day streak", style = MwTs(color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp))
         }
     }
 }
@@ -203,13 +203,13 @@ fun StreakWarning(streak: Int, missedYesterday: Boolean, onLog: () -> Unit, onDo
             Text(
                 if (missedYesterday) "MISSED A DAY" else "NO FREE DAY LEFT",
                 Modifier.graphicsLayer { alpha = title.value; translationY = (1f - title.value) * 24f },
-                style = TextStyle(color = warm, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 6.sp),
+                style = MwTs(color = warm, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 6.sp),
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 if (missedYesterday) "Your free day for this week was used" else "This week's free day is already used",
                 Modifier.graphicsLayer { alpha = title.value },
-                style = TextStyle(color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                style = MwTs(color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
             )
             Spacer(Modifier.height(18.dp))
             Box(Modifier.size(230.dp), contentAlignment = Alignment.Center) {
@@ -222,21 +222,21 @@ fun StreakWarning(streak: Int, missedYesterday: Boolean, onLog: () -> Unit, onDo
             }
             Spacer(Modifier.height(6.dp))
             Text("$streak", style = numStyle(64f, Color(0xFFFFE9B0)))
-            Text("day streak, still alive", style = TextStyle(color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp))
+            Text("day streak, still alive", style = MwTs(color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp))
             Spacer(Modifier.height(16.dp))
             Text(
                 if (missedYesterday) "Log something today. Missing another day this week will end your streak."
                 else "Log something today to keep your streak going.",
                 Modifier.graphicsLayer { alpha = title.value },
-                style = TextStyle(color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                style = MwTs(color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
             )
             Spacer(Modifier.height(22.dp))
             Box(
-                Modifier.clip(androidx.compose.foundation.shape.RoundedCornerShape(99.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent)))
+                Modifier.clip(MwShape(99.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent)))
                     .clickable(remember { MutableInteractionSource() }, null) { onLog() }.padding(horizontal = 28.dp, vertical = 13.dp),
-            ) { Text("Log something now", style = TextStyle(color = MW.OnAccent, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
+            ) { Text("Log something now", style = MwTs(color = MW.OnAccent, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)) }
             Spacer(Modifier.height(10.dp))
-            Text("Later", Modifier.clickable(remember { MutableInteractionSource() }, null) { closing = true }.padding(12.dp), style = TextStyle(color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
+            Text("Later", Modifier.clickable(remember { MutableInteractionSource() }, null) { closing = true }.padding(12.dp), style = MwTs(color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
         }
     }
 }
@@ -477,12 +477,12 @@ fun StreakEnded(streak: Int, kind: Int, onLog: () -> Unit, onDone: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 32.dp)) {
             Text(
                 "STREAK ENDED", Modifier.graphicsLayer { alpha = title.value; translationY = (1f - title.value) * 24f },
-                style = TextStyle(color = red, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 6.sp),
+                style = MwTs(color = red, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 6.sp),
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 "A day was missed and there was no free day left", Modifier.graphicsLayer { alpha = title.value },
-                style = TextStyle(color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                style = MwTs(color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
             )
             Spacer(Modifier.height(10.dp))
             Box(Modifier.size(280.dp, 270.dp), contentAlignment = Alignment.Center) {
@@ -516,18 +516,18 @@ fun StreakEnded(streak: Int, kind: Int, onLog: () -> Unit, onDone: () -> Unit) {
                 val tint = lerp(Color(0xFFFFE9B0), Color.White.copy(alpha = 0.6f), grey.value)
                 for (i in 0 until len) RollDigit(a[i], b[i], digits[i].value, tint)
             }
-            Text("day streak", style = TextStyle(color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp))
+            Text("day streak", style = MwTs(color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp))
             Spacer(Modifier.height(22.dp))
             Column(
                 Modifier.graphicsLayer { val s = pop.value; scaleX = s; scaleY = s; alpha = s.coerceIn(0f, 1f) },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
-                    Modifier.clip(androidx.compose.foundation.shape.RoundedCornerShape(99.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent)))
+                    Modifier.clip(MwShape(99.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent)))
                         .clickable(remember { MutableInteractionSource() }, null) { if (pop.value > 0.6f) onLog() }.padding(horizontal = 32.dp, vertical = 15.dp),
-                ) { Text("Start a new streak", style = TextStyle(color = MW.OnAccent, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)) }
+                ) { Text("Start a new streak", style = MwTs(color = MW.OnAccent, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)) }
                 Spacer(Modifier.height(6.dp))
-                Text("Later", Modifier.clickable(remember { MutableInteractionSource() }, null) { if (pop.value > 0.6f) closing = true }.padding(12.dp), style = TextStyle(color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
+                Text("Later", Modifier.clickable(remember { MutableInteractionSource() }, null) { if (pop.value > 0.6f) closing = true }.padding(12.dp), style = MwTs(color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp, fontWeight = FontWeight.SemiBold))
             }
         }
     }

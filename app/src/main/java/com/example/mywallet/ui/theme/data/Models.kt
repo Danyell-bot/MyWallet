@@ -158,6 +158,8 @@ object LI : KSerializer<Int> {
     val home: kotlinx.serialization.json.JsonObject? = null,
     val alerts: Boolean = true,
     val palette: String = "default",
+    val uiTheme: String = "classic",
+    val catCoat: String = "mixed",
     val pal: String = "",
 )
 

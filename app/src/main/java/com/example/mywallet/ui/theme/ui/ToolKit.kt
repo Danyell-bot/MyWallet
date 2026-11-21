@@ -97,12 +97,12 @@ fun ToolShell(title: String, onClose: () -> Unit, actionLabel: String? = null, o
         CompositionLocalProvider(LocalHaze provides haze) {
             Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 22.dp)) {
                 Row(Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(40.dp).glass(CircleShape).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 22.dp, weight = 2f) }
-                    Text(title, Modifier.weight(1f), textAlign = TextAlign.Center, style = TextStyle(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+                    Box(Modifier.size(40.dp).glass(MwCircle).clickable { onClose() }, contentAlignment = Alignment.Center) { MwIcon("back", Color.White, 22.dp, weight = 2f) }
+                    Text(title, Modifier.weight(1f), textAlign = TextAlign.Center, style = MwTs(color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
                     if (actionLabel != null) {
-                        Row(Modifier.height(40.dp).clip(RoundedCornerShape(20.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))).clickable { onAction() }.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.height(40.dp).clip(MwShape(20.dp)).background(Brush.linearGradient(listOf(MW.Mint, MW.Accent))).clickable { onAction() }.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                             MwIcon("plus", MW.OnAccent, 16.dp, weight = 2.2f); Spacer(Modifier.width(4.dp))
-                            Text(actionLabel, style = TextStyle(color = MW.OnAccent, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+                            Text(actionLabel, style = MwTs(color = MW.OnAccent, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
                         }
                     } else Spacer(Modifier.size(40.dp))
                 }
@@ -138,15 +138,15 @@ fun FormPanel(title: String, onClose: () -> Unit, content: @Composable ColumnSco
                 enter = slideInVertically(tween(340, easing = FastOutSlowInEasing)) { it } + fadeIn(tween(200)),
                 exit = slideOutVertically(tween(230)) { it } + fadeOut(tween(180)),
             ) {
-                val top = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                val top = MwShape(topStart = 30.dp, topEnd = 30.dp)
                 Column(
                     Modifier.fillMaxWidth().heightIn(max = 760.dp).clip(top).background(Color(0xFF0B1020)).border(1.dp, Color.White.copy(alpha = 0.12f), top)
                         .clickable(remember0, null) { }.navigationBarsPadding().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(top = 16.dp, bottom = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(title, Modifier.weight(1f), style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
-                        Box(Modifier.size(36.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)).clickable { close() }, contentAlignment = Alignment.Center) { MwIcon("close", Color.White, 17.dp, weight = 2f) }
+                        Text(title, Modifier.weight(1f), style = MwTs(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
+                        Box(Modifier.size(36.dp).clip(MwCircle).background(Color.White.copy(alpha = 0.1f)).clickable { close() }, contentAlignment = Alignment.Center) { MwIcon("close", Color.White, 17.dp, weight = 2f) }
                     }
                     content()
                 }
@@ -161,12 +161,12 @@ private val remember0 = MutableInteractionSource()
 fun FText(label: String, value: String, onChange: (String) -> Unit, hint: String = "", decimal: Boolean = false, modifier: Modifier = Modifier) {
     Column(modifier) {
         Lbl(label, Modifier.padding(bottom = 6.dp))
-        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
+        Box(Modifier.fillMaxWidth().clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 16.dp, vertical = 14.dp)) {
             BasicTextField(
                 value, { v -> onChange(if (decimal) v.filter { c -> c.isDigit() || c == '.' }.take(12) else v.take(40)) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-                textStyle = TextStyle(color = Color.White, fontSize = 16.sp), cursorBrush = SolidColor(MW.Accent),
+                textStyle = MwTs(color = Color.White, fontSize = 16.sp), cursorBrush = SolidColor(MW.Accent),
                 keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Text),
-                decorationBox = { inner -> Box { if (value.isEmpty()) Text(hint, style = TextStyle(color = Color.White.copy(alpha = 0.4f), fontSize = 16.sp)); inner() } },
+                decorationBox = { inner -> Box { if (value.isEmpty()) Text(hint, style = MwTs(color = Color.White.copy(alpha = 0.4f), fontSize = 16.sp)); inner() } },
             )
         }
     }
@@ -181,14 +181,14 @@ fun FChips(label: String, options: List<Triple<String, String, String?>>, select
             options.forEach { (k, n, ic) ->
                 val on = k == selected
                 Row(
-                    Modifier.then(if (scroll) Modifier else Modifier.weight(1f)).height(40.dp).clip(RoundedCornerShape(20.dp))
+                    Modifier.then(if (scroll) Modifier else Modifier.weight(1f)).height(40.dp).clip(MwShape(20.dp))
                         .background(if (on) MW.Accent.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.08f))
-                        .border(1.dp, if (on) MW.Accent else Color.White.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+                        .border(1.dp, if (on) MW.Accent else Color.White.copy(alpha = 0.12f), MwShape(20.dp))
                         .clickable { onSelect(k) }.padding(horizontal = 14.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
                 ) {
                     if (ic != null) { GlyphIcon(ic, if (on) MW.Mint else Color.White, 18.dp); Spacer(Modifier.width(7.dp)) }
-                    Text(n, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = if (on) MW.Mint else Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold))
+                    Text(n, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = if (on) MW.Mint else Color.White, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold))
                 }
             }
         }
@@ -207,9 +207,9 @@ fun FIcons(label: String, icons: List<String>, selected: String, onSelect: (Stri
                     row.forEach { e ->
                         val on = e == selected
                         Box(
-                            Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(15.dp))
+                            Modifier.weight(1f).height(48.dp).clip(MwShape(15.dp))
                                 .background(if (on) MW.Accent.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.07f))
-                                .border(1.dp, if (on) MW.Accent else Color.White.copy(alpha = 0.1f), RoundedCornerShape(15.dp)).clickable { onSelect(e) },
+                                .border(1.dp, if (on) MW.Accent else Color.White.copy(alpha = 0.1f), MwShape(15.dp)).clickable { onSelect(e) },
                             contentAlignment = Alignment.Center,
                         ) { GlyphIcon(e, if (on) MW.Mint else Color.White.copy(alpha = 0.9f), 23.dp) }
                     }
@@ -227,15 +227,15 @@ fun FDate(label: String, value: String, onChange: (String) -> Unit, optional: Bo
         Lbl(label, Modifier.padding(bottom = 6.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Row(
-                Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).clickable {
+                Modifier.weight(1f).height(50.dp).clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).clickable {
                     val (y, m, d) = civilFromDays(if (value.isEmpty()) todayDn() else dn(value))
                     DatePickerDialog(ctx, { _, yy, mm, dd -> onChange(com.example.mywallet.data.fromDn(daysFromCivil(yy.toLong(), (mm + 1).toLong(), dd.toLong()))) }, y.toInt(), (m - 1).toInt(), d.toInt()).show()
                 }.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically,
             ) {
                 MwIcon("calendar", MW.Dim, 18.dp); Spacer(Modifier.width(10.dp))
-                Text(if (value.isEmpty()) "No date" else fmtDate(value), style = TextStyle(color = if (value.isEmpty()) Color.White.copy(alpha = 0.4f) else Color.White, fontSize = 16.sp))
+                Text(if (value.isEmpty()) "No date" else fmtDate(value), style = MwTs(color = if (value.isEmpty()) Color.White.copy(alpha = 0.4f) else Color.White, fontSize = 16.sp))
             }
-            if (optional && value.isNotEmpty()) Box(Modifier.size(50.dp).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).clickable { onChange("") }, contentAlignment = Alignment.Center) { MwIcon("close", MW.Dim, 18.dp) }
+            if (optional && value.isNotEmpty()) Box(Modifier.size(50.dp).clip(MwShape(16.dp)).background(Color.White.copy(alpha = 0.08f)).clickable { onChange("") }, contentAlignment = Alignment.Center) { MwIcon("close", MW.Dim, 18.dp) }
         }
     }
 }
@@ -243,35 +243,35 @@ fun FDate(label: String, value: String, onChange: (String) -> Unit, optional: Bo
 @Composable
 fun BigButton(text: String, color: Color = MW.Accent, textColor: Color = MW.OnAccent, icon: String? = null, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().height(54.dp).clip(RoundedCornerShape(27.dp)).background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.72f)))).clickable { onClick() },
+        Modifier.fillMaxWidth().height(54.dp).clip(MwShape(27.dp)).background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.72f)))).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
     ) {
         if (icon != null) { MwIcon(icon, textColor, 19.dp); Spacer(Modifier.width(8.dp)) }
-        Text(text, style = TextStyle(color = textColor, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
+        Text(text, style = MwTs(color = textColor, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold))
     }
 }
 
 @Composable
 fun GhostButton(text: String, modifier: Modifier = Modifier, color: Color = Color.White, icon: String? = null, onClick: () -> Unit) {
     Row(
-        modifier.height(46.dp).clip(RoundedCornerShape(23.dp)).background(color.copy(alpha = 0.12f)).border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(23.dp)).clickable { onClick() }.padding(horizontal = 16.dp),
+        modifier.height(46.dp).clip(MwShape(23.dp)).background(color.copy(alpha = 0.12f)).border(1.dp, color.copy(alpha = 0.3f), MwShape(23.dp)).clickable { onClick() }.padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
     ) {
         if (icon != null) { MwIcon(icon, color, 18.dp); Spacer(Modifier.width(7.dp)) }
-        Text(text, maxLines = 1, style = TextStyle(color = color, fontSize = 14.sp, fontWeight = FontWeight.Bold))
+        Text(text, maxLines = 1, style = MwTs(color = color, fontSize = 14.sp, fontWeight = FontWeight.Bold))
     }
 }
 
 @Composable
 fun ConfirmDialog(title: String, text: String, confirm: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
-        Column(Modifier.popIn().fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Color(0xFF0E1426)).border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(28.dp)).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(Modifier.size(54.dp).clip(CircleShape).background(Color(0xFFFF6B81).copy(alpha = 0.2f)), contentAlignment = Alignment.Center) { MwIcon("trash", Color(0xFFFF8FA0), 26.dp) }
-            Text(title, textAlign = TextAlign.Center, style = TextStyle(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
-            Text(text, textAlign = TextAlign.Center, style = TextStyle(color = MW.Dim, fontSize = 14.sp))
+        Column(Modifier.popIn().fillMaxWidth().clip(MwShape(28.dp)).background(Color(0xFF0E1426)).border(1.dp, Color.White.copy(alpha = 0.16f), MwShape(28.dp)).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(Modifier.size(54.dp).clip(MwCircle).background(Color(0xFFFF6B81).copy(alpha = 0.2f)), contentAlignment = Alignment.Center) { MwIcon("trash", Color(0xFFFF8FA0), 26.dp) }
+            Text(title, textAlign = TextAlign.Center, style = MwTs(color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold))
+            Text(text, textAlign = TextAlign.Center, style = MwTs(color = MW.Dim, fontSize = 14.sp))
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(25.dp)).background(Color.White.copy(alpha = 0.1f)).clickable { onDismiss() }, contentAlignment = Alignment.Center) { Text("Keep it", style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold)) }
-                Box(Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(25.dp)).background(Color(0xFFFF6B81)).clickable { onConfirm() }, contentAlignment = Alignment.Center) { Text(confirm, style = TextStyle(color = Color.White, fontWeight = FontWeight.ExtraBold)) }
+                Box(Modifier.weight(1f).height(50.dp).clip(MwShape(25.dp)).background(Color.White.copy(alpha = 0.1f)).clickable { onDismiss() }, contentAlignment = Alignment.Center) { Text("Keep it", style = MwTs(color = Color.White, fontWeight = FontWeight.Bold)) }
+                Box(Modifier.weight(1f).height(50.dp).clip(MwShape(25.dp)).background(Color(0xFFFF6B81)).clickable { onConfirm() }, contentAlignment = Alignment.Center) { Text(confirm, style = MwTs(color = Color.White, fontWeight = FontWeight.ExtraBold)) }
             }
         }
     }
@@ -279,21 +279,21 @@ fun ConfirmDialog(title: String, text: String, confirm: String, onConfirm: () ->
 
 @Composable
 fun EmptyCard(icon: String, text: String) {
-    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(26.dp)).padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Box(Modifier.size(54.dp).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon(icon, MW.Mint, 26.dp) }
-        Text(text, textAlign = TextAlign.Center, style = TextStyle(color = MW.Dim, fontSize = 14.sp, lineHeight = 20.sp))
+    Column(Modifier.fillMaxWidth().glass(MwShape(26.dp)).padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(Modifier.size(54.dp).clip(MwShape(18.dp)).background(Color.White.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { MwIcon(icon, MW.Mint, 26.dp) }
+        Text(text, textAlign = TextAlign.Center, style = MwTs(color = MW.Dim, fontSize = 14.sp, lineHeight = 20.sp))
     }
 }
 
 /** one list row inside a glass card */
 @Composable
 fun ItemRow(icon: String, title: String, sub: String, subColor: Color = MW.Dim, tint: Color = Color.White, trailing: @Composable (() -> Unit)? = null, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().glassLite(RoundedCornerShape(22.dp)).clickable { onClick() }.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(tint.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) { GlyphIcon(icon, Color.White.copy(alpha = 0.95f), 22.dp) }
+    Row(Modifier.fillMaxWidth().glassLite(MwShape(22.dp)).clickable { onClick() }.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(42.dp).clip(MwShape(14.dp)).background(tint.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) { GlyphIcon(icon, Color.White.copy(alpha = 0.95f), 22.dp) }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
-            Text(sub, maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(color = subColor, fontSize = 12.5.sp))
+            Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+            Text(sub, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MwTs(color = subColor, fontSize = 12.5.sp))
         }
         if (trailing != null) trailing()
     }
