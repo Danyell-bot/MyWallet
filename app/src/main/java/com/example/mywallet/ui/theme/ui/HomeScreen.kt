@@ -3,6 +3,7 @@ package com.example.mywallet.ui
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.combinedClickable
@@ -487,6 +488,46 @@ private fun TodayPage(s: AppState, hide: Boolean, toggleHide: () -> Unit, onHist
                 if (i > 0) Divider()
                 Row3(n.icon, n.tint, n.title, n.sub, n.subColor, if (hide) "••••" else n.amount, n.amountColor, onClick = { if (n.route.isNotEmpty()) onOpen(n.route) })
             }
+        }
+    }
+
+    // Quick add: one tap logs a saved record for today
+    run {
+        val qctx = LocalContext.current
+        Spacer(Modifier.height(18.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Lbl("Quick add", Modifier.weight(1f))
+            Text("Manage", Modifier.clickable { onOpen("quick") }.padding(vertical = 4.dp), style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold))
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            s.favs.forEach { f ->
+                Row(
+                    Modifier.height(40.dp).clip(RoundedCornerShape(20.dp)).background(Color.White.copy(alpha = 0.08f))
+                        .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+                        .clickable {
+                            if (s.acc(f.acct) == null) Toast.makeText(qctx, "That account no longer exists", Toast.LENGTH_SHORT).show()
+                            else {
+                                store.addRec(kotlinx.serialization.json.buildJsonObject {
+                                    put("id", kotlinx.serialization.json.JsonPrimitive(store.newId())); put("ts", kotlinx.serialization.json.JsonPrimitive(System.currentTimeMillis()))
+                                    put("type", kotlinx.serialization.json.JsonPrimitive(f.type)); put("acct", kotlinx.serialization.json.JsonPrimitive(f.acct)); put("to", kotlinx.serialization.json.JsonPrimitive(""))
+                                    put("cat", kotlinx.serialization.json.JsonPrimitive(f.cat)); put("amount", kotlinx.serialization.json.JsonPrimitive(f.amount))
+                                    put("date", kotlinx.serialization.json.JsonPrimitive(todayStr())); put("note", kotlinx.serialization.json.JsonPrimitive(f.name))
+                                })
+                                Toast.makeText(qctx, f.name + " added", Toast.LENGTH_SHORT).show()
+                            }
+                        }.padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(f.icon.ifBlank { "⚡" }, style = TextStyle(fontSize = 15.sp))
+                    Spacer(Modifier.width(7.dp))
+                    Text(f.name + "  " + s.money(f.amount), style = TextStyle(color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold), maxLines = 1)
+                }
+            }
+            Box(
+                Modifier.height(40.dp).clip(RoundedCornerShape(20.dp)).border(1.dp, MW.Accent.copy(alpha = 0.6f), RoundedCornerShape(20.dp)).clickable { onOpen("quick") }.padding(horizontal = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) { Text(if (s.favs.isEmpty()) "⚡  Set up quick add" else "⚡  More", style = TextStyle(color = MW.Mint, fontSize = 13.sp, fontWeight = FontWeight.Bold)) }
         }
     }
 

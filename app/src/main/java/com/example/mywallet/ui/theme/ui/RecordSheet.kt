@@ -167,7 +167,7 @@ private suspend fun photoToDataUrl(ctx: android.content.Context, uri: Uri): Stri
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         cr.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
         var sample = 1
-        while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 4400) sample *= 2
+        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= 2200) sample *= 2
         var bmp = cr.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample }) } ?: return@withContext null
         val rot = try {
             cr.openInputStream(uri)?.use {
@@ -185,7 +185,7 @@ private suspend fun photoToDataUrl(ctx: android.content.Context, uri: Uri): Stri
         val out = ByteArrayOutputStream()
         bmp.compress(Bitmap.CompressFormat.JPEG, 80, out)
         "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
-    } catch (e: Exception) { null }
+    } catch (e: Throwable) { null }
 }
 
 private fun dataUrlToBitmap(url: String): Bitmap? = try {
@@ -543,9 +543,9 @@ fun BoxScope.RecordSheet(s: AppState, store: Store, edit: Rec?, onClose: () -> U
                             amountText = trimNum(r.total)
                             if (note.isBlank() && r.merchant != null) applyNote(r.merchant)
                             toast("Found " + trimNum(r.total) + ". Please check it.")
-                        } else if (r == null) toast("The scanner could not open this picture. Try choosing it again.")
-                        else if (!r.hadText) toast("No text found in this picture. Try a sharper or closer photo.")
-                        else toast("Read the text but found no total. Type the amount in.")
+                        } else if (r == null || r.error != null) toast("Scan failed: " + (r?.error ?: "unknown") )
+                        else if (!r.hadText) toast("No text found. Try a sharper photo.")
+                        else toast("No total found. Type it in.")
                     }
                 }
             }

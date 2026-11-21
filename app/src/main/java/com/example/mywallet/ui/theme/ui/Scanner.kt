@@ -8,7 +8,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 /** what the scanner could read from a receipt (hadText = it saw some words, even if no total) */
-class ScanResult(val total: Double?, val merchant: String?, val hadText: Boolean = true)
+class ScanResult(val total: Double?, val merchant: String?, val hadText: Boolean = true, val error: String? = null)
 
 // 1,250.00  or  150.50  or  150,00
 private val DECIMAL = Regex("""(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)\s?[.,]\s?(\d{2})(?!\d)""")
@@ -25,8 +25,8 @@ private fun currencyIn(line: String): List<Double> =
 private fun plainIn(line: String): List<Double> =
     PLAIN.findAll(line).mapNotNull { it.groupValues[1].replace(",", "").toDoubleOrNull() }.filter { it in 1.0..999999.0 }.toList()
 
-private val KEYS = listOf("grand total", "total due", "amount due", "balance due", "to pay", "total", "amount", "you paid", "paid", "payment", "sent", "payable", "charge")
-private val SKIP = listOf("subtotal", "sub total", "vatable", "change", "vat ", "reference", "ref no", "ref.", "account", "mobile", "number")
+private val KEYS = listOf("grand total", "total due", "amount due", "balance due", "to pay", "total", "amount", "you paid", "paid", "sent", "payable")
+private val SKIP = listOf("subtotal", "sub total", "vatable", "change", "vat ", "service charge", "charge", "fee", "reference", "ref no", "ref.", "account", "mobile", "number")
 
 /** pure text rules: prefer the number on a "total" or "amount" line, otherwise the biggest amount on the receipt */
 fun parseReceipt(text: String): ScanResult {
@@ -36,13 +36,13 @@ fun parseReceipt(text: String): ScanResult {
         val lo = l.lowercase()
         if (KEYS.any { lo.contains(it) } && SKIP.none { lo.contains(it) }) {
             var here = decimalsIn(l) + currencyIn(l)
-            if (here.isEmpty()) here = plainIn(l.replace(Regex("(?i)(grand total|total due|amount due|balance due|to pay|total|amount|you paid|paid|payment|sent|payable|charge)"), " "))
+            if (here.isEmpty()) here = plainIn(l.replace(Regex("(?i)(grand total|total due|amount due|balance due|to pay|total|amount|you paid|paid|sent|payable)"), " "))
             if (here.isEmpty()) lines.getOrNull(i + 1)?.let { n -> here = decimalsIn(n) + currencyIn(n) + (if (n.length < 14) plainIn(n) else emptyList()) }
-            cands.addAll(here)
+            cands.addAll(here.filter { it > 0.0 })
         }
     }
-    val decimals = lines.flatMap { decimalsIn(it) }
-    val currency = lines.flatMap { currencyIn(it) }
+    val decimals = lines.flatMap { decimalsIn(it) }.filter { it > 0.0 }
+    val currency = lines.flatMap { currencyIn(it) }.filter { it > 0.0 }
     val total = when {
         cands.isNotEmpty() -> cands.maxOrNull()
         decimals.isNotEmpty() -> decimals.maxOrNull()
@@ -55,18 +55,29 @@ fun parseReceipt(text: String): ScanResult {
 
 /** reads the receipt photo on the phone (no internet needed) and reports what it found */
 fun scanReceipt(dataUrl: String, onDone: (ScanResult?) -> Unit) {
+    fun fail(e: Throwable) = onDone(ScanResult(null, null, false, (e.message ?: e.javaClass.simpleName).take(60)))
     try {
         val bytes = Base64.decode(dataUrl.substringAfter("base64,"), Base64.DEFAULT)
-        var bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return onDone(null)
-        // small pictures (an old low-resolution photo) read much better when they are enlarged first
+        val opts = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
+        var bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts) ?: return onDone(ScanResult(null, null, false, "picture could not be decoded"))
+        // small pictures read better when enlarged first
         val shortSide = minOf(bmp.width, bmp.height)
         if (shortSide < 900) {
             val k = 1000f / shortSide
             bmp = Bitmap.createScaledBitmap(bmp, (bmp.width * k).toInt(), (bmp.height * k).toInt(), true)
         }
         val client = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        client.process(InputImage.fromBitmap(bmp, 0))
-            .addOnSuccessListener { t -> onDone(parseReceipt(t.text)) }
-            .addOnFailureListener { onDone(null) }
-    } catch (e: Throwable) { onDone(null) }
+        fun run(b: Bitmap, retry: Boolean) {
+            client.process(InputImage.fromBitmap(b, 0))
+                .addOnSuccessListener { t -> onDone(parseReceipt(t.text)) }
+                .addOnFailureListener { e ->
+                    // one more try on a smaller copy (some phones fail on very tall images)
+                    if (retry) try {
+                        val k = 1400f / maxOf(b.width, b.height)
+                        run(Bitmap.createScaledBitmap(b, (b.width * k).toInt().coerceAtLeast(1), (b.height * k).toInt().coerceAtLeast(1), true), false)
+                    } catch (x: Throwable) { fail(x) } else fail(e)
+                }
+        }
+        run(bmp, true)
+    } catch (e: Throwable) { fail(e) }
 }
